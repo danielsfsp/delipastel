@@ -147,6 +147,11 @@ nav.bottom button.on{background:var(--acc2);color:var(--acc-d)}
 .grade .gh{font-size:14px;color:var(--muted);font-weight:700}
 .grade .pg{color:var(--muted);font-size:16px}
 .grade .pr{font-size:18px;color:var(--acc-d)}
+.grade .cv{display:flex;flex-direction:column;padding:4px 0;border-top:1px solid #f1e8da}
+.grade .pg{padding-top:6px;border-top:1px solid #f1e8da}
+.grade .ccu{font-size:15px;color:var(--muted)}
+.grade .cve{font-size:15px;color:var(--muted)}
+.grade .cv.ruim .pr{color:var(--bad)}
 </style>
 </head>
 <body>
@@ -306,7 +311,7 @@ function vPrecos(){
   var pesos={};ativos().forEach(function(p){p.tamanhos.forEach(function(t){pesos[Math.round(peso(t))]=1;});});
   var lp=Object.keys(pesos).map(Number).sort(function(a,b){return a-b;});
   if(fPeso!=='todos'&&!pesos[+fPeso])fPeso='todos';
-  var h='<h1>Preços de venda</h1><p class="lead">Toque em um salgado para ver quanto custa, o preço e o lucro de cada tamanho.</p>';
+  var h='<h1>Preços de venda</h1><p class="lead">Custo para fazer e preço de venda de cada salgado. Toque em um salgado para ver o lucro e mudar o preço.</p>';
   if(ded+mg>=1)h+='<div class="aviso">Os impostos, taxas e o lucro somam mais de 100%. Ajuste em <b>⚙️ Ajustes</b>.</div>';
   h+='<div class="filtros"><label class="campo"><span class="rot">Mostrar</span><select class="in" data-t="fmodo" data-k="fmodo">'+[['todos','Todos'],['cong','❄️ Congelados'],['pronto','🔥 Prontos']].map(function(o){return '<option value="'+o[0]+'"'+(fModo===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></label>'+
     '<label class="campo"><span class="rot">Tamanho</span><select class="in" data-t="fpeso" data-k="fpeso"><option value="todos">Todos</option>'+lp.map(function(w){return '<option value="'+w+'"'+(String(fPeso)===String(w)?' selected':'')+'>'+w+' g</option>';}).join('')+'</select></label></div>';
@@ -321,7 +326,7 @@ function vPrecos(){
       var cols=(ms.length>1)||(fPeso==='todos'||ts.length>1);
       var grade='<span class="grade" style="grid-template-columns:'+(fPeso==='todos'||ts.length>1?'56px ':'')+ms.map(function(){return '1fr';}).join(' ')+'">'+
         (ms.length>1?(fPeso==='todos'||ts.length>1?'<i></i>':'')+ms.map(function(m){return '<i class="gh">'+modoNome(m)+'</i>';}).join(''):'')+
-        ts.map(function(t){return (fPeso==='todos'||ts.length>1?'<i class="pg">'+nf(peso(t),0)+' g</i>':'')+ms.map(function(m){return '<b class="pr">'+brl(calc(p,t,m).preco)+'</b>';}).join('');}).join('')+'</span>';
+        ts.map(function(t){return (fPeso==='todos'||ts.length>1?'<i class="pg">'+nf(peso(t),0)+' g</i>':'')+ms.map(function(m){var c=calc(p,t,m);return '<span class="cv'+(c.lucro<0?' ruim':'')+'"><span class="ccu">custo '+brl(c.custo)+'</span><span class="cve">venda <b class="pr">'+brl(c.preco)+'</b></span></span>';}).join('');}).join('')+'</span>';
       linhas+='<button class="linha" data-act="cartao" data-v="'+p.id+'"><span class="lc"><b class="ln">'+esc(p.nome)+(prej?' <span class="alerta">⚠️ prejuízo</span>':'')+'</b>'+grade+'</span><span class="seta">›</span></button>';
     });
     if(linhas){algum=true;h+='<h2 class="grupo">'+catLabel(g[0])+'</h2><div class="card lista-botoes">'+linhas+'</div>';}
