@@ -125,6 +125,11 @@ nav.bottom button.on{background:var(--acc2);color:var(--acc-d)}
 .login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
 .login .card{max-width:420px;width:100%}
 .toast{position:fixed;bottom:calc(90px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:14px 20px;border-radius:14px;font-size:17px;z-index:30;max-width:92vw;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.alerta{font-size:14px;color:var(--bad);font-weight:700;white-space:nowrap}
+.linha small b.pr{display:inline;font-size:15px;color:var(--acc-d)}
+.tamcard{padding:14px}
+.arq .linha{gap:12px}
+.arq .btn{flex:none}
 </style>
 </head>
 <body>
@@ -193,7 +198,9 @@ function necessidade(p,t,q,acc){
   var ml=q*peso(t)/1000*(+p.fritura||0)/perda;if(ml>0)acc.oleo=(acc.oleo||0)+ml;
   return acc;
 }
-function grupos(){var g={};S.produtos.forEach(function(p){(g[p.cat]=g[p.cat]||[]).push(p);});return Object.keys(g).sort(function(a,b){return a==='Frito'?-1:b==='Frito'?1:a.localeCompare(b);}).map(function(k){return [k,g[k]];});}
+function ativos(){return S.produtos.filter(function(p){return !p.arquivado;});}
+function arquivados(){return S.produtos.filter(function(p){return p.arquivado;});}
+function grupos(){var g={};ativos().forEach(function(p){(g[p.cat]=g[p.cat]||[]).push(p);});return Object.keys(g).sort(function(a,b){return a==='Frito'?-1:b==='Frito'?1:a.localeCompare(b);}).map(function(k){return [k,g[k]];});}
 function tNome(t){return (t.nome?esc(t.nome)+' · ':'')+nf(peso(t),0)+' g';}
 function usoDe(id){return S.produtos.filter(function(p){return p.comps.some(function(c){return c.itens.some(function(it){return it.ins===id;});});});}
 
@@ -265,25 +272,39 @@ function menu(){
 }
 
 /* ================= Tela: Preços ================= */
+var verArq=false;
+function linhaArquivados(){
+  var arq=arquivados();if(!arq.length)return '';
+  var h='<button class="btn sec wide" data-act="verarq">'+(verArq?'Esconder':'Mostrar')+' arquivados ('+arq.length+')</button>';
+  if(verArq){h+='<div class="card lista-botoes arq">';arq.forEach(function(p){h+='<div class="linha"><span><b>'+esc(p.nome)+'</b><small>Arquivado · não aparece nos preços nem nas encomendas</small></span><button class="btn sec" data-act="desarquivar" data-v="'+p.id+'">Voltar a usar</button></div>';});h+='</div>';}
+  return h;
+}
 function vPrecos(){
   var ded=dedPct(),mg=(+S.params.margem||0)/100;
-  var h='<h1>Preços de venda</h1><p class="lead">Quanto custa fazer cada salgado e por quanto vender. Toque em <b>Mudar preço</b> para colocar o seu preço.</p>';
+  var h='<h1>Preços de venda</h1><p class="lead">Toque em um salgado para ver quanto custa, o preço e o lucro de cada tamanho.</p>';
   if(ded+mg>=1)h+='<div class="aviso">Os impostos, taxas e o lucro somam mais de 100%. Ajuste em <b>⚙️ Ajustes</b>.</div>';
   grupos().forEach(function(g){
-    h+='<h2 class="grupo">'+catLabel(g[0])+'</h2>';
+    h+='<h2 class="grupo">'+catLabel(g[0])+'</h2><div class="card lista-botoes">';
     g[1].forEach(function(p){
-      h+='<div class="card"><div class="ctop"><div class="nome">'+esc(p.nome)+'</div><button class="btn sec" data-act="receita" data-v="'+p.id+'">📖 Receita</button></div>';
-      p.tamanhos.forEach(function(t){var c=calc(p,t);
-        h+='<div class="tam"><div class="tamnome">'+tNome(t)+'</div><div class="tres">'+
-          '<div><span class="lbl">Custa</span><span class="val">'+brl(c.custo)+'</span></div>'+
-          '<div><span class="lbl">'+(c.manual?'Seu preço':'Preço sugerido')+'</span><span class="val big">'+brl(c.preco)+'</span><span class="lbl">cento '+brl(c.preco*100)+'</span></div>'+
-          '<div><span class="lbl">Lucro</span><span class="val '+(c.lucro<0?'neg':'pos')+'">'+brl(c.lucro)+'</span><span class="lbl">'+pct(c.margem)+'</span></div>'+
-          '</div><button class="btn wide" data-act="preco" data-id="'+p.id+'" data-tid="'+t.id+'">✏️ Mudar preço</button></div>';
-      });
-      h+='</div>';
+      var prej=p.tamanhos.some(function(t){return calc(p,t).lucro<0;});
+      h+='<button class="linha" data-act="cartao" data-v="'+p.id+'"><span><b>'+esc(p.nome)+(prej?' <span class="alerta">⚠️ prejuízo</span>':'')+'</b><small>'+p.tamanhos.map(function(t){var c=calc(p,t);return nf(peso(t),0)+' g: <b class="pr">'+brl(c.preco)+'</b>';}).join(' · ')+'</small></span><span class="seta">›</span></button>';
     });
+    h+='</div>';
   });
-  return h;
+  return h+'<button class="btn pri wide" data-act="addprod">+ Incluir novo salgado</button>'+linhaArquivados();
+}
+function mCartao(){
+  var p=prodById(M.id);if(!p)return '';var corpo='';
+  p.tamanhos.forEach(function(t){var c=calc(p,t);
+    corpo+='<div class="card tamcard"><div class="tamnome">'+tNome(t)+'</div><div class="tres">'+
+      '<div><span class="lbl">Custa</span><span class="val">'+brl(c.custo)+'</span></div>'+
+      '<div><span class="lbl">'+(c.manual?'Seu preço':'Preço sugerido')+'</span><span class="val big">'+brl(c.preco)+'</span><span class="lbl">cento '+brl(c.preco*100)+'</span></div>'+
+      '<div><span class="lbl">Lucro</span><span class="val '+(c.lucro<0?'neg':'pos')+'">'+brl(c.lucro)+'</span><span class="lbl">'+pct(c.margem)+'</span></div>'+
+      '</div><button class="btn wide" data-act="preco" data-id="'+p.id+'" data-tid="'+t.id+'">✏️ Mudar preço</button></div>';
+  });
+  corpo+='<button class="btn sec wide" data-act="receita" data-v="'+p.id+'">📖 Ver receita e custos</button><button class="btn sec wide" data-act="abrirficha" data-v="'+p.id+'">✏️ Mudar receita ou tamanhos</button>'+
+    '<div class="row2" style="margin-top:18px"><button class="btn sec" data-act="arquivar" data-v="'+p.id+'">📦 Arquivar</button><button class="btn danger" data-act="delprod" data-id="'+p.id+'">🗑 Excluir</button></div><p class="ajuda">Arquivar esconde o salgado sem apagar. Dá para voltar a usar depois.</p>';
+  return janela(esc(p.nome),catLabel(p.cat).replace(/s$/,''),corpo,'<button class="btn pri" data-act="fechar">Fechar</button>');
 }
 function mPreco(){
   var p=prodById(M.id),t=p&&tamById(p,M.tid);if(!t)return '';var c=calc(p,t);
@@ -334,7 +355,7 @@ function vReceitas(){
     g[1].forEach(function(p){h+='<button class="linha" data-act="abrirficha" data-v="'+p.id+'"><span><b>'+esc(p.nome)+'</b><small>'+p.tamanhos.map(function(t){return nf(peso(t),0)+' g';}).join(' · ')+'</small></span><span class="seta">›</span></button>';});
     h+='</div>';
   });
-  return h+'<button class="btn pri wide" data-act="addprod">+ Cadastrar novo salgado</button>';
+  return h+'<button class="btn pri wide" data-act="addprod">+ Incluir novo salgado</button>'+linhaArquivados();
 }
 function mFicha(){
   var p=prodById(M.id);if(!p)return '';var pa='data-id="'+p.id+'"';
@@ -361,7 +382,7 @@ function mFicha(){
       '<div class="parterod"><span>Custo de cada um: <b>'+brl(c.custo)+'</b></span><button class="btn link-danger" data-act="deltam" '+ta+'>Apagar tamanho</button></div></div>';
   });
   corpo+='<span class="rot">Adicionar tamanho:</span><div class="chips">'+[20,25,30,50,80,100,120].map(function(w){return '<button class="btn chip" data-act="addtam" '+pa+' data-v="'+w+'">'+w+' g</button>';}).join('')+'</div></div>';
-  corpo+='<div class="bloco"><button class="btn sec wide" data-act="dupprod" '+pa+'>Fazer uma cópia deste salgado</button><button class="btn danger wide" data-act="delprod" '+pa+'>Apagar este salgado</button></div>';
+  corpo+='<div class="bloco"><button class="btn sec wide" data-act="dupprod" '+pa+'>Fazer uma cópia deste salgado</button><button class="btn sec wide" data-act="arquivar" data-v="'+p.id+'">📦 Arquivar este salgado</button><button class="btn danger wide" data-act="delprod" '+pa+'>🗑 Excluir este salgado</button></div>';
   return janela(esc(p.nome),'Receita · '+esc(p.cat),corpo,'<button class="btn sec" data-act="receita" data-v="'+p.id+'">Ver custos</button><button class="btn pri" data-act="fechar">Pronto</button>');
 }
 
@@ -424,7 +445,7 @@ function vEncomenda(){
   return h+linhas;
 }
 function mCompras(){
-  var need={};S.produtos.forEach(function(p){p.tamanhos.forEach(function(t){var q=+S.pedido[p.id+'|'+t.id]||0;if(q>0)necessidade(p,t,q,need);});});
+  var need={};ativos().forEach(function(p){p.tamanhos.forEach(function(t){var q=+S.pedido[p.id+'|'+t.id]||0;if(q>0)necessidade(p,t,q,need);});});
   var tot=0,corpo='<ul class="lista">';
   Object.keys(need).sort(function(a,b){var x=insById(a),y=insById(b);return (x?x.nome:'').localeCompare(y?y.nome:'');}).forEach(function(k){var x=insById(k);if(!x)return;var v=need[k]*custoBase(x);tot+=v;corpo+='<li><span>'+esc(x.nome)+'<small>'+qtyLabel(need[k],base(x.unid))+'</small></span><b>'+brl(v)+'</b></li>';});
   corpo+='<li class="tot"><span>Total</span><b>'+brl(tot)+'</b></li></ul>';
@@ -446,7 +467,7 @@ function vAjustes(){
   h+=campo('Quantos kg de salgado você faz por mês',num('param','data-f="producaoKg"',nf(P.producaoKg,1)),'Some tudo o que sai da cozinha no mês, mais ou menos. Quanto mais você produz, menor o custo de cada salgado.');
   if(!kg)h+=campo('Quantos salgados por mês',num('param','data-f="producaoUn"',nf(P.producaoUn,0)));
   h+='<p class="ajuda">Cada kg produzido leva <b>'+brl(fixoPorG()*1000)+'</b> das contas fixas.</p></div>';
-  var sk=0,n=0;S.produtos.forEach(function(p){p.tamanhos.forEach(function(t){var c=calc(p,t);if(isFinite(c.preco)&&c.peso>0){sk+=(c.preco*(1-dedPct())-c.ing-c.emb)/c.peso*1000;n++;}});});
+  var sk=0,n=0;ativos().forEach(function(p){p.tamanhos.forEach(function(t){var c=calc(p,t);if(isFinite(c.preco)&&c.peso>0){sk+=(c.preco*(1-dedPct())-c.ing-c.emb)/c.peso*1000;n++;}});});
   if(n){var mk=sk/n;h+='<div class="card"><h3>Quanto precisa vender</h3><p class="lead" style="margin:0">Para pagar as contas fixas do mês ('+brl(tf)+'), é preciso vender mais ou menos <b>'+(mk>0?Math.ceil(tf/mk).toLocaleString('pt-BR'):'—')+' kg de salgados por mês</b>. Daí para cima é lucro.</p></div>';}
   h+='<div class="card"><h3>Segurança</h3><p class="ajuda">Tudo é salvo sozinho na internet. A cópia de segurança é um texto com todos os dados, para guardar no WhatsApp ou e-mail.</p><button class="btn sec wide" data-act="backup">Cópia de segurança</button><button class="btn sec wide" data-act="sair">Sair deste aparelho</button></div>';
   return h;
@@ -469,7 +490,7 @@ function render(){
   if(!S){root.innerHTML=vLogin();var f=document.getElementById('flogin');if(f)f.addEventListener('submit',function(e){e.preventDefault();entrar(document.getElementById('cod').value);});return;}
   var ae=document.activeElement,key=ae&&ae.dataset&&ae.dataset.k,y=window.scrollY,sh=document.querySelector('.mbody'),my=sh?sh.scrollTop:0,mtipo=M&&M.tipo+(M.id||'');
   var v={precos:vPrecos,receitas:vReceitas,ingredientes:vIngredientes,encomenda:vEncomenda,ajustes:vAjustes}[tab]();
-  var m='';if(M){m={preco:mPreco,receita:mReceita,ficha:mFicha,ingrediente:mIngrediente,usos:mUsos,compras:mCompras,backup:mBackup,confirmar:mConfirmar,conflito:mConflito}[M.tipo]();}
+  var m='';if(M){m={cartao:mCartao,preco:mPreco,receita:mReceita,ficha:mFicha,ingrediente:mIngrediente,usos:mUsos,compras:mCompras,backup:mBackup,confirmar:mConfirmar,conflito:mConflito}[M.tipo]();}
   root.innerHTML=cabecalho()+'<main>'+v+'</main>'+menu()+m;
   status();
   try{window.scrollTo(0,y);}catch(e){}
@@ -481,7 +502,7 @@ function renderSoon(){if(pressing)needRender=true;else render();}
 document.addEventListener('pointerdown',function(){pressing=true;},true);
 document.addEventListener('pointerup',function(){pressing=false;setTimeout(function(){if(needRender)render();},60);},true);
 document.addEventListener('pointercancel',function(){pressing=false;if(needRender)render();},true);
-function abrir(m){M=m;render();var sh=document.querySelector('.mbody');if(sh)sh.scrollTop=0;}
+function abrir(m,comVolta){if(comVolta&&M&&M.tipo!=='confirmar')m.volta=M;M=m;render();var sh=document.querySelector('.mbody');if(sh)sh.scrollTop=0;}
 
 /* ================= Edição de campos ================= */
 root.addEventListener('input',function(e){var el=e.target;if(el.dataset&&el.dataset.t==='busca'){busca=el.value;var pos=el.selectionStart;render();var b=root.querySelector('.busca');if(b){b.focus();try{b.setSelectionRange(pos,pos);}catch(er){}}}});
@@ -515,15 +536,19 @@ root.addEventListener('click',function(e){
   var a=b.dataset.act,v=b.dataset.v,id=b.dataset.id,p=id?prodById(id):null;
   if(a==='fechar'&&b.classList.contains('modal')&&e.target.closest('[data-stop]'))return;
   if(a==='tab'){tab=v;M=null;try{history.replaceState(null,'','#'+v);}catch(er){}render();try{window.scrollTo(0,0);}catch(er){}return;}
-  if(a==='fechar'){M=(M&&M.tipo==='confirmar'&&M.volta)?M.volta:null;render();return;}
+  if(a==='fechar'){M=M?(M.cancelar||M.volta||null):null;render();return;}
   // Preços
-  if(a==='preco'){abrir({tipo:'preco',id:id,tid:b.dataset.tid});return;}
+  if(a==='cartao'){abrir({tipo:'cartao',id:v});return;}
+  if(a==='preco'){abrir({tipo:'preco',id:id,tid:b.dataset.tid},true);return;}
+  if(a==='verarq'){verArq=!verArq;render();return;}
+  if(a==='desarquivar'){var pd=prodById(v);if(pd){pd.arquivado=false;touch();render();toast(pd.nome+' voltou para a lista.');}return;}
+  if(a==='arquivar'){var pa2=prodById(v);M={tipo:'confirmar',titulo:'Arquivar '+esc(pa2.nome)+'?',msg:'<b>'+esc(pa2.nome)+'</b> some da lista de preços, receitas e encomendas, mas não é apagado. Para voltar a usar, toque em <b>Mostrar arquivados</b> no fim da lista.',cancelar:M,botao:'Sim, arquivar',faz:function(){pa2.arquivado=true;Object.keys(S.pedido).forEach(function(k){if(k.indexOf(pa2.id+'|')===0)delete S.pedido[k];});}};render();return;}
   if(a==='usarsug'){var tu=tamById(p,b.dataset.tid);if(tu){tu.preco=null;touch();render();}return;}
   // Receita
-  if(a==='receita'){abrir({tipo:'receita',id:v});return;}
+  if(a==='receita'){abrir({tipo:'receita',id:v},true);return;}
   if(a==='rq'){M.q=Math.max(0,(+M.q||0)+(+v));render();return;}
   if(a==='rt'){M.t=v;render();return;}
-  if(a==='abrirficha'){abrir({tipo:'ficha',id:v});return;}
+  if(a==='abrirficha'){abrir({tipo:'ficha',id:v},M&&M.tipo!=='usos'&&M.tipo!=='ficha');return;}
   if(a==='setcat'){p.cat=v;if(v==='Assado')p.fritura=0;else if(!(+p.fritura>0))p.fritura=100;touch();render();return;}
   if(a==='additem'){p.comps[+b.dataset.ci].itens.push({ins:S.insumos[0].id,qtd:0});touch();render();return;}
   if(a==='delitem'){p.comps[+b.dataset.ci].itens.splice(+b.dataset.i,1);touch();render();return;}
@@ -533,7 +558,7 @@ root.addEventListener('click',function(e){
   if(a==='deltam'){if(p.tamanhos.length<=1){toast('O salgado precisa ter pelo menos um tamanho.');return;}var tid=b.dataset.tid,td=tamById(p,tid);M={tipo:'confirmar',titulo:'Apagar o tamanho '+tNome(td)+'?',msg:'Esse tamanho vai sair de '+esc(p.nome)+'.',botao:'Sim, apagar',volta:{tipo:'ficha',id:p.id},faz:function(){p.tamanhos=p.tamanhos.filter(function(t){return t.id!==tid;});}};render();return;}
   if(a==='addprod'){var np={id:uid('p'),nome:'Novo salgado',cat:'Frito',perda:5,fritura:100,comps:[{id:'massa',nome:'Massa',rend:1000,itens:[]},{id:'rech',nome:'Recheio',rend:1000,itens:[]}],tamanhos:[{id:'t1',nome:'Festa',g:{massa:12,rech:8},preco:null,emb:null}]};S.produtos.push(np);touch();abrir({tipo:'ficha',id:np.id});return;}
   if(a==='dupprod'){var cp=clone(p);cp.id=uid('p');cp.nome+=' (cópia)';cp.tamanhos.forEach(function(t){t.preco=null;});S.produtos.push(cp);touch();abrir({tipo:'ficha',id:cp.id});toast('Cópia criada. Mude o nome e a receita.');return;}
-  if(a==='delprod'){M={tipo:'confirmar',titulo:'Apagar '+esc(p.nome)+'?',msg:'O salgado <b>'+esc(p.nome)+'</b> e a receita dele vão ser apagados. Isso não tem volta.',botao:'Sim, apagar',faz:function(){S.produtos=S.produtos.filter(function(x){return x.id!==p.id;});Object.keys(S.pedido).forEach(function(k){if(k.indexOf(p.id+'|')===0)delete S.pedido[k];});}};render();return;}
+  if(a==='delprod'){M={tipo:'confirmar',titulo:'Apagar '+esc(p.nome)+'?',msg:'O salgado <b>'+esc(p.nome)+'</b> e a receita dele vão ser apagados para sempre. Se só quer tirar da lista, use <b>Arquivar</b>.',cancelar:M,botao:'Sim, excluir',faz:function(){S.produtos=S.produtos.filter(function(x){return x.id!==p.id;});Object.keys(S.pedido).forEach(function(k){if(k.indexOf(p.id+'|')===0)delete S.pedido[k];});}};render();return;}
   if(a==='sim'){var f=M.faz,volta=M.volta;f();M=volta||null;touch();render();return;}
   // Ingredientes
   if(a==='abriring'){abrir({tipo:'ingrediente',id:id});return;}
