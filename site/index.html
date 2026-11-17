@@ -130,6 +130,11 @@ nav.bottom button.on{background:var(--acc2);color:var(--acc-d)}
 .tamcard{padding:14px}
 .arq .linha{gap:12px}
 .arq .btn{flex:none}
+.modo{display:inline-block;font-weight:700;font-size:16px;padding:4px 12px;border-radius:99px;margin:10px 0 8px}
+.modo.frito{background:#fff0e3;color:#9a330a}.modo.cong{background:#e0f2fe;color:#075985}
+.modo.mini{font-size:13px;padding:2px 8px;margin:4px 0 0;display:inline-block}
+.vende{margin:0 0 12px;font-size:17px}
+.btn.link{border:0;background:none;color:var(--acc-d);text-decoration:underline;min-height:40px;padding:4px 6px;font-size:16px}
 </style>
 </head>
 <body>
@@ -180,22 +185,25 @@ function fixoPorG(){var P=S.params;return P.producaoKg>0?totalFixos()/(P.produca
 function fixoPorUn(){var P=S.params;return P.producaoUn>0?totalFixos()/P.producaoUn:0;}
 function dedPct(){var p=S.params;return ((+p.imposto||0)+(+p.taxaCartao||0)+(+p.comissao||0))/100;}
 function oleoPorMl(){var o=insById('oleo');return o?custoBase(o):0;}
-function calc(p,t){
+function modos(p){if(p.cat!=='Frito')return ['pronto'];var v=p.vende||'ambos';return v==='frito'?['frito']:v==='cong'?['cong']:['frito','cong'];}
+function modoNome(m){return m==='cong'?'❄️ Congelado':m==='frito'?'🔥 Frito':'';}
+function chave(p,t,m){return p.id+'|'+t.id+(m==='cong'?'|cong':'');}
+function calc(p,t,modo){var cong=modo==='cong';
   var w=peso(t),ing=0,partes=[];
   p.comps.forEach(function(c){var g=+t.g[c.id]||0,v=g*compPorG(c);ing+=v;partes.push({nome:c.nome,g:g,v:v});});
-  var oleo=(w/1000)*(+p.fritura||0)*oleoPorMl();
+  var oleo=cong?0:(w/1000)*(+p.fritura||0)*oleoPorMl();
   var perda=Math.min(+p.perda||0,95)/100;
   var ingT=(ing+oleo)/(1-perda);
-  var emb=(t.emb!=null&&t.emb!=='')?+t.emb:(+S.params.embalagem||0);
+  var emb=cong?(S.params.embalagemCong!=null?+S.params.embalagemCong:(+S.params.embalagem||0)):((t.emb!=null&&t.emb!=='')?+t.emb:(+S.params.embalagem||0));
   var fix=S.params.rateioModo==='un'?fixoPorUn():w*fixoPorG();
   var custo=ingT+emb+fix,ded=dedPct(),mg=(+S.params.margem||0)/100,div=1-ded-mg,sug=div>0?custo/div:NaN;
-  var manual=t.preco!=null&&t.preco>0,preco=manual?+t.preco:sug,lucro=preco*(1-ded)-custo;
+  var pm=cong?t.precoCong:t.preco,manual=pm!=null&&pm>0,preco=manual?+pm:sug,lucro=preco*(1-ded)-custo;
   return {peso:w,partes:partes,oleo:oleo,ing:ingT,emb:emb,fix:fix,custo:custo,sug:sug,preco:preco,manual:manual,lucro:lucro,margem:preco>0?lucro/preco:NaN};
 }
-function necessidade(p,t,q,acc){
+function necessidade(p,t,q,acc,modo){
   acc=acc||{};var perda=1-Math.min(+p.perda||0,95)/100;
   p.comps.forEach(function(c){if(!(c.rend>0))return;var f=q*(+t.g[c.id]||0)/perda/c.rend;c.itens.forEach(function(it){acc[it.ins]=(acc[it.ins]||0)+(it.qtd||0)*f;});});
-  var ml=q*peso(t)/1000*(+p.fritura||0)/perda;if(ml>0)acc.oleo=(acc.oleo||0)+ml;
+  var ml=modo==='cong'?0:q*peso(t)/1000*(+p.fritura||0)/perda;if(ml>0)acc.oleo=(acc.oleo||0)+ml;
   return acc;
 }
 function ativos(){return S.produtos.filter(function(p){return !p.arquivado;});}
@@ -287,8 +295,8 @@ function vPrecos(){
   grupos().forEach(function(g){
     h+='<h2 class="grupo">'+catLabel(g[0])+'</h2><div class="card lista-botoes">';
     g[1].forEach(function(p){
-      var prej=p.tamanhos.some(function(t){return calc(p,t).lucro<0;});
-      h+='<button class="linha" data-act="cartao" data-v="'+p.id+'"><span><b>'+esc(p.nome)+(prej?' <span class="alerta">⚠️ prejuízo</span>':'')+'</b><small>'+p.tamanhos.map(function(t){var c=calc(p,t);return nf(peso(t),0)+' g: <b class="pr">'+brl(c.preco)+'</b>';}).join(' · ')+'</small></span><span class="seta">›</span></button>';
+      var ms=modos(p),prej=p.tamanhos.some(function(t){return ms.some(function(m){return calc(p,t,m).lucro<0;});});
+      h+='<button class="linha" data-act="cartao" data-v="'+p.id+'"><span><b>'+esc(p.nome)+(prej?' <span class="alerta">⚠️ prejuízo</span>':'')+'</b><small>'+p.tamanhos.map(function(t){return nf(peso(t),0)+' g: '+ms.map(function(m){return (ms.length>1?(m==='cong'?'congelado ':'frito '):'')+'<b class="pr">'+brl(calc(p,t,m).preco)+'</b>';}).join(' / ');}).join(' · ')+'</small></span><span class="seta">›</span></button>';
     });
     h+='</div>';
   });
@@ -296,34 +304,40 @@ function vPrecos(){
 }
 function mCartao(){
   var p=prodById(M.id);if(!p)return '';var corpo='';
-  p.tamanhos.forEach(function(t){var c=calc(p,t);
-    corpo+='<div class="card tamcard"><div class="tamnome">'+tNome(t)+'</div><div class="tres">'+
+  var ms=modos(p);
+  if(p.cat==='Frito')corpo+='<div class="vende">Vende: <b>'+(ms.length>1?'frito e congelado':ms[0]==='cong'?'só congelado':'só frito')+'</b> <button class="btn link" data-act="nomes" data-v="'+p.id+'">mudar</button></div>';
+  p.tamanhos.forEach(function(t){
+    corpo+='<div class="card tamcard"><div class="tamnome">'+tNome(t)+'</div>';
+    ms.forEach(function(m){var c=calc(p,t,m);
+    corpo+=(ms.length>1||m==='cong'?'<div class="modo '+m+'">'+modoNome(m)+'</div>':'')+'<div class="tres">'+
       '<div><span class="lbl">Custa</span><span class="val">'+brl(c.custo)+'</span></div>'+
       '<div><span class="lbl">'+(c.manual?'Seu preço':'Preço sugerido')+'</span><span class="val big">'+brl(c.preco)+'</span><span class="lbl">cento '+brl(c.preco*100)+'</span></div>'+
       '<div><span class="lbl">Lucro</span><span class="val '+(c.lucro<0?'neg':'pos')+'">'+brl(c.lucro)+'</span><span class="lbl">'+pct(c.margem)+'</span></div>'+
-      '</div><button class="btn wide" data-act="preco" data-id="'+p.id+'" data-tid="'+t.id+'">✏️ Mudar preço</button>'+(p.tamanhos.length>1?'<button class="btn link-danger" data-act="deltam" data-id="'+p.id+'" data-tid="'+t.id+'">🗑 Excluir este tamanho</button>':'')+'</div>';
+      '</div><button class="btn wide" data-act="preco" data-id="'+p.id+'" data-tid="'+t.id+'" data-modo="'+m+'">✏️ Mudar preço'+(ms.length>1?(m==='cong'?' do congelado':' do frito'):'')+'</button>';});
+    corpo+=(p.tamanhos.length>1?'<button class="btn link-danger" data-act="deltam" data-id="'+p.id+'" data-tid="'+t.id+'">🗑 Excluir este tamanho</button>':'')+'</div>';
   });
   corpo=('<button class="btn sec wide" data-act="nomes" data-v="'+p.id+'" style="margin:0 0 14px">✏️ Mudar o nome</button>')+corpo;
   corpo+='<button class="btn sec wide" data-act="receita" data-v="'+p.id+'">📖 Ver receita e custos</button><button class="btn sec wide" data-act="abrirficha" data-v="'+p.id+'">✏️ Mudar receita ou tamanhos</button>'+
     '<div class="row2" style="margin-top:18px"><button class="btn sec" data-act="arquivar" data-v="'+p.id+'">📦 Arquivar</button><button class="btn danger" data-act="delprod" data-id="'+p.id+'">🗑 Excluir</button></div><p class="ajuda">Arquivar esconde o salgado sem apagar. Dá para voltar a usar depois.</p>';
   return janela(esc(p.nome),catLabel(p.cat).replace(/s$/,''),corpo,'<button class="btn pri" data-act="fechar">Fechar</button>');
 }
+function vendeSegs(p){var v=p.vende||'ambos';return '<span class="rot">Como vende</span><div class="segs">'+[['frito','🔥 Frito'],['cong','❄️ Congelado'],['ambos','Os dois']].map(function(o){return '<button class="seg '+(v===o[0]?'on':'')+'" data-act="setvende" data-id="'+p.id+'" data-v="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div><p class="ajuda">Congelado: a cliente frita em casa. Não entra o óleo da fritura e usa a embalagem de congelado.</p>';}
 function mNomes(){
   var p=prodById(M.id);if(!p)return '';var pa='data-id="'+p.id+'"';
   var corpo=campo('Nome do salgado',txt('prod',pa+' data-f="nome"',p.nome),'Ex.: Coxinha de frango com catupiry')+
     '<span class="rot">Tipo</span><div class="segs">'+['Frito','Assado'].map(function(o){return '<button class="seg '+(p.cat===o?'on':'')+'" data-act="setcat" '+pa+' data-v="'+o+'">'+o+'</button>';}).join('')+'</div>'+
-    '<h3 style="margin-top:8px">Nome dos tamanhos</h3>'+p.tamanhos.map(function(t){return campo(nf(peso(t),0)+' g',txt('tam',pa+' data-tid="'+t.id+'" data-f="nome"',t.nome,'Ex.: Festa, Média, Grande'));}).join('');
+    (p.cat==='Frito'?vendeSegs(p):'')+'<h3 style="margin-top:8px">Nome dos tamanhos</h3>'+p.tamanhos.map(function(t){return campo(nf(peso(t),0)+' g',txt('tam',pa+' data-tid="'+t.id+'" data-f="nome"',t.nome,'Ex.: Festa, Média, Grande'));}).join('');
   return janela(esc(p.nome),'Mudar nome',corpo,'<button class="btn pri" data-act="fechar">Pronto</button>');
 }
 function mPreco(){
-  var p=prodById(M.id),t=p&&tamById(p,M.tid);if(!t)return '';var c=calc(p,t);
+  var p=prodById(M.id),t=p&&tamById(p,M.tid);if(!t)return '';var md=M.modo,c=calc(p,t,md),pm=md==='cong'?t.precoCong:t.preco,ma='data-id="'+p.id+'" data-tid="'+t.id+'" data-modo="'+md+'"';
   var corpo='<div class="info"><div><span class="lbl">Custo de cada um</span><span class="val">'+brl(c.custo)+'</span></div><div><span class="lbl">Preço sugerido</span><span class="val">'+brl(c.sug)+'</span><span class="lbl">cento '+brl(c.sug*100)+'</span></div></div>'+
     '<p class="ajuda">O preço sugerido já cobre impostos, taxas e '+nf(+S.params.margem||0)+'% de lucro.</p>'+
-    campo('Preço de cada salgado (R$)',num('preco','data-id="'+p.id+'" data-tid="'+t.id+'" data-f="un"',c.manual?nf(t.preco,2):'',nf(c.sug,2),'grande'))+
-    campo('ou preço do cento (R$)',num('preco','data-id="'+p.id+'" data-tid="'+t.id+'" data-f="cento"',c.manual?nf(t.preco*100,2):'',nf(c.sug*100,2),'grande'))+
+    campo('Preço de cada salgado (R$)',num('preco',ma+' data-f="un"',c.manual?nf(pm,2):'',nf(c.sug,2),'grande'))+
+    campo('ou preço do cento (R$)',num('preco',ma+' data-f="cento"',c.manual?nf(pm*100,2):'',nf(c.sug*100,2),'grande'))+
     '<div class="resultado '+(c.lucro<0?'ruim':'bom')+'">Com '+brl(c.preco)+' cada, você ganha <b>'+brl(c.lucro)+'</b> por salgado ('+pct(c.margem)+')'+(c.lucro<0?'. <b>Esse preço dá prejuízo!</b>':' e <b>'+brl(c.lucro*100)+'</b> por cento.')+'</div>';
-  var rod=(c.manual?'<button class="btn sec" data-act="usarsug" data-id="'+p.id+'" data-tid="'+t.id+'">Usar o sugerido</button>':'')+'<button class="btn pri" data-act="fechar">Pronto</button>';
-  return janela(esc(p.nome),'Preço · '+tNome(t),corpo,rod);
+  var rod=(c.manual?'<button class="btn sec" data-act="usarsug" '+ma+'>Usar o sugerido</button>':'')+'<button class="btn pri" data-act="fechar">Pronto</button>';
+  return janela(esc(p.nome),'Preço · '+tNome(t)+(md==='cong'?' · ❄️ Congelado':md==='frito'?' · 🔥 Frito':''),corpo,rod);
 }
 
 /* ================= Janela: Receita e custos ================= */
@@ -342,7 +356,7 @@ function mReceita(){
     corpo+='<div class="tamcusto"><div class="tamnome">'+tNome(t)+'</div><ul class="lista">'+c.partes.map(function(x){return '<li><span>'+esc(x.nome)+'<small>'+nf(x.g,1)+' g</small></span><b>'+brl(x.v)+'</b></li>';}).join('')+
       (c.oleo>0?'<li><span>Óleo da fritura</span><b>'+brl(c.oleo)+'</b></li>':'')+
       '<li><span>Embalagem</span><b>'+brl(c.emb)+'</b></li><li><span>Contas fixas (aluguel, gás…)</span><b>'+brl(c.fix)+'</b></li>'+
-      '<li class="tot"><span>Custo de cada um</span><b>'+brl(c.custo)+'</b></li></ul></div>';
+      '<li class="tot"><span>Custo de cada um'+(modos(p).indexOf('cong')>=0?' (frito)':'')+'</span><b>'+brl(c.custo)+'</b></li>'+(modos(p).indexOf('cong')>=0?'<li class="tot"><span>❄️ Congelado (sem óleo)</span><b>'+brl(calc(p,t,'cong').custo)+'</b></li>':'')+'</ul></div>';
   });
   corpo+='</div>';
   var t=tamById(p,M.t);
@@ -371,7 +385,7 @@ function mFicha(){
   var corpo='<div class="bloco"><h3>1. Dados do salgado</h3>'+campo('Nome',txt('prod',pa+' data-f="nome"',p.nome))+
     '<span class="rot">Tipo</span><div class="segs">'+['Frito','Assado'].map(function(o){return '<button class="seg '+(p.cat===o?'on':'')+'" data-act="setcat" '+pa+' data-v="'+o+'">'+o+'</button>';}).join('')+'</div>'+
     campo('Quanto perde na produção (%)',num('prod',pa+' data-f="perda"',nf(p.perda)),'Salgados que quebram, queimam ou sobram. Ex.: 5 = de cada 100, 5 se perdem.')+
-    (p.cat==='Frito'?campo('Óleo da fritura (ml por kg de salgado)',num('prod',pa+' data-f="fritura"',nf(p.fritura)),'Quanto óleo se gasta para fritar 1 kg de salgado. Se não souber, deixe 100.'):'')+'</div>';
+    (p.cat==='Frito'?vendeSegs(p):'')+(p.cat==='Frito'?campo('Óleo da fritura (ml por kg de salgado)',num('prod',pa+' data-f="fritura"',nf(p.fritura)),'Quanto óleo se gasta para fritar 1 kg de salgado. Se não souber, deixe 100.'):'')+'</div>';
   corpo+='<div class="bloco"><h3>2. Receita</h3><p class="ajuda">Separe a receita em partes (massa, recheio, empanar). Em cada parte coloque os ingredientes e quanto ela pesa depois de pronta.</p>';
   p.comps.forEach(function(c,ci){var ca=pa+' data-ci="'+ci+'"';
     corpo+='<div class="parte">'+campo('Nome da parte',txt('comp',ca+' data-f="nome"',c.nome))+
@@ -441,11 +455,11 @@ function vEncomenda(){
   var linhas='';
   grupos().forEach(function(g){linhas+='<h2 class="grupo">'+catLabel(g[0])+'</h2>';g[1].forEach(function(p){
     linhas+='<div class="card"><div class="nome">'+esc(p.nome)+'</div>';
-    p.tamanhos.forEach(function(t){var k=p.id+'|'+t.id,q=+S.pedido[k]||0,c=calc(p,t);
-      T.q+=q;T.c+=q*c.custo;T.f+=q*c.preco;T.l+=q*c.lucro;if(q>0)necessidade(p,t,q,need);
-      linhas+='<div class="encrow"><div><b>'+tNome(t)+'</b><small>'+brl(c.preco)+' cada'+(q?' · total '+brl(q*c.preco):'')+'</small></div><div class="stepper">'+
+    var ms=modos(p);p.tamanhos.forEach(function(t){ms.forEach(function(m){var k=chave(p,t,m),q=+S.pedido[k]||0,c=calc(p,t,m);
+      T.q+=q;T.c+=q*c.custo;T.f+=q*c.preco;T.l+=q*c.lucro;if(q>0)necessidade(p,t,q,need,m);
+      linhas+='<div class="encrow"><div><b>'+tNome(t)+'</b>'+(ms.length>1||m==='cong'?'<span class="modo mini '+m+'">'+modoNome(m)+'</span>':'')+'<small>'+brl(c.preco)+' cada'+(q?' · total '+brl(q*c.preco):'')+'</small></div><div class="stepper">'+
         '<button class="btn sq" data-act="qtd" data-k2="'+k+'" data-v="-25">−</button>'+num('pedido','data-kk="'+k+'"',q?nf(q,0):'','0')+'<button class="btn sq" data-act="qtd" data-k2="'+k+'" data-v="25">+</button></div></div>';
-    });
+    });});
     linhas+='</div>';
   });});
   h+='<h1>Encomenda</h1><p class="lead">Coloque quantos salgados a cliente quer. Os botões − e + mudam de 25 em 25.</p>';
@@ -454,7 +468,7 @@ function vEncomenda(){
   return h+linhas;
 }
 function mCompras(){
-  var need={};ativos().forEach(function(p){p.tamanhos.forEach(function(t){var q=+S.pedido[p.id+'|'+t.id]||0;if(q>0)necessidade(p,t,q,need);});});
+  var need={};ativos().forEach(function(p){p.tamanhos.forEach(function(t){modos(p).forEach(function(m){var q=+S.pedido[chave(p,t,m)]||0;if(q>0)necessidade(p,t,q,need,m);});});});
   var tot=0,corpo='<ul class="lista">';
   Object.keys(need).sort(function(a,b){var x=insById(a),y=insById(b);return (x?x.nome:'').localeCompare(y?y.nome:'');}).forEach(function(k){var x=insById(k);if(!x)return;var v=need[k]*custoBase(x);tot+=v;corpo+='<li><span>'+esc(x.nome)+'<small>'+qtyLabel(need[k],base(x.unid))+'</small></span><b>'+brl(v)+'</b></li>';});
   corpo+='<li class="tot"><span>Total</span><b>'+brl(tot)+'</b></li></ul>';
@@ -469,7 +483,7 @@ function vAjustes(){
     campo('Imposto (%)',num('param','data-f="imposto"',nf(P.imposto)),'MEI ou Simples. Se não paga imposto sobre a venda, coloque 0.')+
     campo('Taxa da maquininha / Pix (%)',num('param','data-f="taxaCartao"',nf(P.taxaCartao)))+
     campo('Comissão de aplicativo de entrega (%)',num('param','data-f="comissao"',nf(P.comissao)),'iFood e parecidos. Se não usa, coloque 0.')+
-    campo('Embalagem por salgado (R$)',num('param','data-f="embalagem"',nf(P.embalagem,3)),'Ex.: caixa de um cento a R$ 3,00 → 0,03.')+'</div>';
+    campo('Embalagem por salgado (R$)',num('param','data-f="embalagem"',nf(P.embalagem,3)),'Ex.: caixa de um cento a R$ 3,00 → 0,03.')+campo('Embalagem do congelado por salgado (R$)',num('param','data-f="embalagemCong"',nf(P.embalagemCong!=null?P.embalagemCong:P.embalagem,3)),'Saco de congelado. Ex.: saco para 50 salgados a R$ 1,00 → 0,02.')+'</div>';
   h+='<div class="card"><h3>Contas fixas do mês</h3><p class="ajuda">Aluguel, luz, gás, salários… Essas contas são divididas entre todos os salgados produzidos no mês.</p>';
   S.fixos.forEach(function(f,i){h+='<div class="fixo">'+txt('fixo','data-i="'+i+'" data-f="nome"',f.nome)+num('fixo','data-i="'+i+'" data-f="valor"',nf(f.valor,2))+'<button class="btn lixo" data-act="delfixo" data-v="'+i+'" aria-label="Apagar">🗑</button></div>';});
   h+='<button class="btn sec wide" data-act="addfixo">+ Adicionar conta</button><div class="resultado bom">Total do mês: <b>'+brl(tf)+'</b></div>';
@@ -530,7 +544,7 @@ root.addEventListener('change',function(e){
     if(f==='peso'){v=v||0;var old=peso(tm);if(old>0){for(var k in tm.g)tm.g[k]=Math.round(tm.g[k]*v/old*10)/10;}else if(p.comps[0]){tm.g={};tm.g[p.comps[0].id]=v;}}
     else tm[f]=v;}
   else if(t==='tamg'&&p){var tg=tamById(p,ds.tid);if(tg)tg.g[ds.cid]=v||0;}
-  else if(t==='preco'&&p){var tp=tamById(p,ds.tid);if(tp)tp.preco=(v==null||v<=0)?null:(f==='cento'?v/100:v);}
+  else if(t==='preco'&&p){var tp=tamById(p,ds.tid);if(tp)tp[ds.modo==='cong'?'precoCong':'preco']=(v==null||v<=0)?null:(f==='cento'?v/100:v);}
   else if(t==='pedido')S.pedido[ds.kk]=v||0;
   touch();renderSoon();
 });
@@ -549,17 +563,18 @@ root.addEventListener('click',function(e){
   // Preços
   if(a==='cartao'){abrir({tipo:'cartao',id:v});return;}
   if(a==='nomes'){abrir({tipo:'nomes',id:v},true);var fn=root.querySelector('.sheet input');if(fn)fn.focus();return;}
-  if(a==='preco'){abrir({tipo:'preco',id:id,tid:b.dataset.tid},true);return;}
+  if(a==='preco'){abrir({tipo:'preco',id:id,tid:b.dataset.tid,modo:b.dataset.modo},true);return;}
+  if(a==='setvende'){p.vende=v;Object.keys(S.pedido).forEach(function(k){if(k.indexOf(p.id+'|')===0){var cg=/\|cong$/.test(k);if((v==='frito'&&cg)||(v==='cong'&&!cg))delete S.pedido[k];}});touch();render();return;}
   if(a==='verarq'){verArq=!verArq;render();return;}
   if(a==='desarquivar'){var pd=prodById(v);if(pd){pd.arquivado=false;touch();render();toast(pd.nome+' voltou para a lista.');}return;}
   if(a==='arquivar'){var pa2=prodById(v);M={tipo:'confirmar',titulo:'Arquivar '+esc(pa2.nome)+'?',msg:'<b>'+esc(pa2.nome)+'</b> some da lista de preços, receitas e encomendas, mas não é apagado. Para voltar a usar, toque em <b>Mostrar arquivados</b> no fim da lista.',cancelar:M,botao:'Sim, arquivar',faz:function(){pa2.arquivado=true;Object.keys(S.pedido).forEach(function(k){if(k.indexOf(pa2.id+'|')===0)delete S.pedido[k];});}};render();return;}
-  if(a==='usarsug'){var tu=tamById(p,b.dataset.tid);if(tu){tu.preco=null;touch();render();}return;}
+  if(a==='usarsug'){var tu=tamById(p,b.dataset.tid);if(tu){tu[b.dataset.modo==='cong'?'precoCong':'preco']=null;touch();render();}return;}
   // Receita
   if(a==='receita'){abrir({tipo:'receita',id:v},true);return;}
   if(a==='rq'){M.q=Math.max(0,(+M.q||0)+(+v));render();return;}
   if(a==='rt'){M.t=v;render();return;}
   if(a==='abrirficha'){abrir({tipo:'ficha',id:v},M&&M.tipo!=='usos'&&M.tipo!=='ficha');return;}
-  if(a==='setcat'){p.cat=v;if(v==='Assado')p.fritura=0;else if(!(+p.fritura>0))p.fritura=100;touch();render();return;}
+  if(a==='setcat'){p.cat=v;if(v==='Assado')Object.keys(S.pedido).forEach(function(k){if(k.indexOf(p.id+'|')===0&&/\|cong$/.test(k))delete S.pedido[k];});if(v==='Assado')p.fritura=0;else if(!(+p.fritura>0))p.fritura=100;touch();render();return;}
   if(a==='additem'){p.comps[+b.dataset.ci].itens.push({ins:S.insumos[0].id,qtd:0});touch();render();return;}
   if(a==='delitem'){p.comps[+b.dataset.ci].itens.splice(+b.dataset.i,1);touch();render();return;}
   if(a==='addcomp'){var nc={id:uid('c'),nome:p.comps.length?'Recheio':'Massa',rend:1000,itens:[]};p.comps.push(nc);p.tamanhos.forEach(function(t){t.g[nc.id]=0;});touch();render();return;}
@@ -567,7 +582,7 @@ root.addEventListener('click',function(e){
   if(a==='addtam'){var w=+v,pr={},s0=null;p.tamanhos.forEach(function(t){if(!s0&&peso(t)>0)s0=t;});var w0=s0?peso(s0):0;p.comps.forEach(function(c){pr[c.id]=w0>0?(+s0.g[c.id]||0)/w0:1/p.comps.length;});var g={};p.comps.forEach(function(c){g[c.id]=Math.round(w*pr[c.id]*10)/10;});p.tamanhos.push({id:uid('t'),nome:nomeTamanho(w),g:g,preco:null,emb:null});touch();render();return;}
   if(a==='deltam'){if(p.tamanhos.length<=1){toast('O salgado precisa ter pelo menos um tamanho.');return;}var tid=b.dataset.tid,td=tamById(p,tid);M={tipo:'confirmar',titulo:'Excluir o tamanho '+tNome(td)+'?',msg:'O tamanho <b>'+tNome(td)+'</b> vai sair de '+esc(p.nome)+'.',botao:'Sim, excluir',volta:M,faz:function(){p.tamanhos=p.tamanhos.filter(function(t){return t.id!==tid;});}};render();return;}
   if(a==='addprod'){var np={id:uid('p'),nome:'Novo salgado',cat:'Frito',perda:5,fritura:100,comps:[{id:'massa',nome:'Massa',rend:1000,itens:[]},{id:'rech',nome:'Recheio',rend:1000,itens:[]}],tamanhos:[{id:'t1',nome:'Festa',g:{massa:12,rech:8},preco:null,emb:null}]};S.produtos.push(np);touch();abrir({tipo:'ficha',id:np.id});return;}
-  if(a==='dupprod'){var cp=clone(p);cp.id=uid('p');cp.nome+=' (cópia)';cp.tamanhos.forEach(function(t){t.preco=null;});S.produtos.push(cp);touch();abrir({tipo:'ficha',id:cp.id});toast('Cópia criada. Mude o nome e a receita.');return;}
+  if(a==='dupprod'){var cp=clone(p);cp.id=uid('p');cp.nome+=' (cópia)';cp.tamanhos.forEach(function(t){t.preco=null;t.precoCong=null;});S.produtos.push(cp);touch();abrir({tipo:'ficha',id:cp.id});toast('Cópia criada. Mude o nome e a receita.');return;}
   if(a==='delprod'){M={tipo:'confirmar',titulo:'Apagar '+esc(p.nome)+'?',msg:'O salgado <b>'+esc(p.nome)+'</b> e a receita dele vão ser apagados para sempre. Se só quer tirar da lista, use <b>Arquivar</b>.',cancelar:M,botao:'Sim, excluir',faz:function(){S.produtos=S.produtos.filter(function(x){return x.id!==p.id;});Object.keys(S.pedido).forEach(function(k){if(k.indexOf(p.id+'|')===0)delete S.pedido[k];});}};render();return;}
   if(a==='sim'){var f=M.faz,volta=M.volta;f();M=volta||null;touch();render();return;}
   // Ingredientes
@@ -579,7 +594,7 @@ root.addEventListener('click',function(e){
   // Encomenda
   if(a==='qtd'){var kq=b.dataset.k2;S.pedido[kq]=Math.max(0,(+S.pedido[kq]||0)+(+v));touch();render();return;}
   if(a==='compras'){abrir({tipo:'compras'});return;}
-  if(a==='copiarcompras'){var need={},L=['Lista de compras — Delipastel'];S.produtos.forEach(function(pp){pp.tamanhos.forEach(function(t){var q=+S.pedido[pp.id+'|'+t.id]||0;if(q>0)necessidade(pp,t,q,need);});});Object.keys(need).forEach(function(k){var x=insById(k);if(x)L.push('• '+x.nome+': '+qtyLabel(need[k],base(x.unid)));});copiar(L.join('\n'),'Lista copiada. Cole no WhatsApp.');return;}
+  if(a==='copiarcompras'){var need={},L=['Lista de compras — Delipastel'];ativos().forEach(function(pp){pp.tamanhos.forEach(function(t){modos(pp).forEach(function(m){var q=+S.pedido[chave(pp,t,m)]||0;if(q>0)necessidade(pp,t,q,need,m);});});});Object.keys(need).forEach(function(k){var x=insById(k);if(x)L.push('• '+x.nome+': '+qtyLabel(need[k],base(x.unid)));});copiar(L.join('\n'),'Lista copiada. Cole no WhatsApp.');return;}
   if(a==='limparpedido'){M={tipo:'confirmar',titulo:'Limpar a encomenda?',msg:'Todas as quantidades voltam para zero.',botao:'Sim, limpar',faz:function(){S.pedido={};}};render();return;}
   // Ajustes
   if(a==='addfixo'){S.fixos.push({nome:'Nova conta',valor:0});touch();render();return;}
