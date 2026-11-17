@@ -303,9 +303,17 @@ function mCartao(){
       '<div><span class="lbl">Lucro</span><span class="val '+(c.lucro<0?'neg':'pos')+'">'+brl(c.lucro)+'</span><span class="lbl">'+pct(c.margem)+'</span></div>'+
       '</div><button class="btn wide" data-act="preco" data-id="'+p.id+'" data-tid="'+t.id+'">✏️ Mudar preço</button>'+(p.tamanhos.length>1?'<button class="btn link-danger" data-act="deltam" data-id="'+p.id+'" data-tid="'+t.id+'">🗑 Excluir este tamanho</button>':'')+'</div>';
   });
+  corpo=('<button class="btn sec wide" data-act="nomes" data-v="'+p.id+'" style="margin:0 0 14px">✏️ Mudar o nome</button>')+corpo;
   corpo+='<button class="btn sec wide" data-act="receita" data-v="'+p.id+'">📖 Ver receita e custos</button><button class="btn sec wide" data-act="abrirficha" data-v="'+p.id+'">✏️ Mudar receita ou tamanhos</button>'+
     '<div class="row2" style="margin-top:18px"><button class="btn sec" data-act="arquivar" data-v="'+p.id+'">📦 Arquivar</button><button class="btn danger" data-act="delprod" data-id="'+p.id+'">🗑 Excluir</button></div><p class="ajuda">Arquivar esconde o salgado sem apagar. Dá para voltar a usar depois.</p>';
   return janela(esc(p.nome),catLabel(p.cat).replace(/s$/,''),corpo,'<button class="btn pri" data-act="fechar">Fechar</button>');
+}
+function mNomes(){
+  var p=prodById(M.id);if(!p)return '';var pa='data-id="'+p.id+'"';
+  var corpo=campo('Nome do salgado',txt('prod',pa+' data-f="nome"',p.nome),'Ex.: Coxinha de frango com catupiry')+
+    '<span class="rot">Tipo</span><div class="segs">'+['Frito','Assado'].map(function(o){return '<button class="seg '+(p.cat===o?'on':'')+'" data-act="setcat" '+pa+' data-v="'+o+'">'+o+'</button>';}).join('')+'</div>'+
+    '<h3 style="margin-top:8px">Nome dos tamanhos</h3>'+p.tamanhos.map(function(t){return campo(nf(peso(t),0)+' g',txt('tam',pa+' data-tid="'+t.id+'" data-f="nome"',t.nome,'Ex.: Festa, Média, Grande'));}).join('');
+  return janela(esc(p.nome),'Mudar nome',corpo,'<button class="btn pri" data-act="fechar">Pronto</button>');
 }
 function mPreco(){
   var p=prodById(M.id),t=p&&tamById(p,M.tid);if(!t)return '';var c=calc(p,t);
@@ -491,7 +499,7 @@ function render(){
   if(!S){root.innerHTML=vLogin();var f=document.getElementById('flogin');if(f)f.addEventListener('submit',function(e){e.preventDefault();entrar(document.getElementById('cod').value);});return;}
   var ae=document.activeElement,key=ae&&ae.dataset&&ae.dataset.k,y=window.scrollY,sh=document.querySelector('.mbody'),my=sh?sh.scrollTop:0,mtipo=M&&M.tipo+(M.id||'');
   var v={precos:vPrecos,receitas:vReceitas,ingredientes:vIngredientes,encomenda:vEncomenda,ajustes:vAjustes}[tab]();
-  var m='';if(M){m={cartao:mCartao,preco:mPreco,receita:mReceita,ficha:mFicha,ingrediente:mIngrediente,usos:mUsos,compras:mCompras,backup:mBackup,confirmar:mConfirmar,conflito:mConflito}[M.tipo]();}
+  var m='';if(M){m={nomes:mNomes,cartao:mCartao,preco:mPreco,receita:mReceita,ficha:mFicha,ingrediente:mIngrediente,usos:mUsos,compras:mCompras,backup:mBackup,confirmar:mConfirmar,conflito:mConflito}[M.tipo]();}
   root.innerHTML=cabecalho()+'<main>'+v+'</main>'+menu()+m;
   status();
   try{window.scrollTo(0,y);}catch(e){}
@@ -540,6 +548,7 @@ root.addEventListener('click',function(e){
   if(a==='fechar'){M=M?(M.cancelar||M.volta||null):null;render();return;}
   // Preços
   if(a==='cartao'){abrir({tipo:'cartao',id:v});return;}
+  if(a==='nomes'){abrir({tipo:'nomes',id:v},true);var fn=root.querySelector('.sheet input');if(fn)fn.focus();return;}
   if(a==='preco'){abrir({tipo:'preco',id:id,tid:b.dataset.tid},true);return;}
   if(a==='verarq'){verArq=!verArq;render();return;}
   if(a==='desarquivar'){var pd=prodById(v);if(pd){pd.arquivado=false;touch();render();toast(pd.nome+' voltou para a lista.');}return;}
