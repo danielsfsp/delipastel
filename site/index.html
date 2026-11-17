@@ -135,6 +135,12 @@ nav.bottom button.on{background:var(--acc2);color:var(--acc-d)}
 .modo.mini{font-size:13px;padding:2px 8px;margin:4px 0 0;display:inline-block}
 .vende{margin:0 0 12px;font-size:17px}
 .btn.link{border:0;background:none;color:var(--acc-d);text-decoration:underline;min-height:40px;padding:4px 6px;font-size:16px}
+.filtros{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 12px 0;margin-bottom:6px}
+.filtros .campo{margin-bottom:12px}
+.linha small.pl{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin-top:4px;font-size:16px}
+.pg{color:var(--muted);min-width:52px}
+.pm{white-space:nowrap}
+.linha small .pr{display:inline;font-size:17px;color:var(--acc-d)}
 </style>
 </head>
 <body>
@@ -288,18 +294,29 @@ function linhaArquivados(){
   if(verArq){h+='<div class="card lista-botoes arq">';arq.forEach(function(p){h+='<div class="linha"><span><b>'+esc(p.nome)+'</b><small>Arquivado · não aparece nos preços nem nas encomendas</small></span><button class="btn sec" data-act="desarquivar" data-v="'+p.id+'">Voltar a usar</button></div>';});h+='</div>';}
   return h;
 }
+var fModo=local.get('dp-fmodo')||'todos',fPeso=local.get('dp-fpeso')||'todos';
 function vPrecos(){
   var ded=dedPct(),mg=(+S.params.margem||0)/100;
+  var pesos={};ativos().forEach(function(p){p.tamanhos.forEach(function(t){pesos[Math.round(peso(t))]=1;});});
+  var lp=Object.keys(pesos).map(Number).sort(function(a,b){return a-b;});
+  if(fPeso!=='todos'&&!pesos[+fPeso])fPeso='todos';
   var h='<h1>Preços de venda</h1><p class="lead">Toque em um salgado para ver quanto custa, o preço e o lucro de cada tamanho.</p>';
   if(ded+mg>=1)h+='<div class="aviso">Os impostos, taxas e o lucro somam mais de 100%. Ajuste em <b>⚙️ Ajustes</b>.</div>';
+  h+='<div class="filtros"><label class="campo"><span class="rot">Mostrar</span><select class="in" data-t="fmodo" data-k="fmodo">'+[['todos','Todos'],['cong','❄️ Congelados'],['pronto','🔥 Prontos']].map(function(o){return '<option value="'+o[0]+'"'+(fModo===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></label>'+
+    '<label class="campo"><span class="rot">Tamanho</span><select class="in" data-t="fpeso" data-k="fpeso"><option value="todos">Todos</option>'+lp.map(function(w){return '<option value="'+w+'"'+(String(fPeso)===String(w)?' selected':'')+'>'+w+' g</option>';}).join('')+'</select></label></div>';
+  var algum=false;
   grupos().forEach(function(g){
-    h+='<h2 class="grupo">'+catLabel(g[0])+'</h2><div class="card lista-botoes">';
+    var linhas='';
     g[1].forEach(function(p){
-      var ms=modos(p),prej=p.tamanhos.some(function(t){return ms.some(function(m){return calc(p,t,m).lucro<0;});});
-      h+='<button class="linha" data-act="cartao" data-v="'+p.id+'"><span><b>'+esc(p.nome)+(prej?' <span class="alerta">⚠️ prejuízo</span>':'')+'</b><small>'+p.tamanhos.map(function(t){return nf(peso(t),0)+' g: '+ms.map(function(m){return (ms.length>1?(m==='cong'?'congelado ':'frito '):'')+'<b class="pr">'+brl(calc(p,t,m).preco)+'</b>';}).join(' / ');}).join(' · ')+'</small></span><span class="seta">›</span></button>';
+      var ms=modos(p).filter(function(m){return fModo==='todos'||(fModo==='cong'?m==='cong':m!=='cong');});
+      var ts=p.tamanhos.filter(function(t){return fPeso==='todos'||Math.round(peso(t))===+fPeso;});
+      if(!ms.length||!ts.length)return;
+      var prej=ts.some(function(t){return ms.some(function(m){return calc(p,t,m).lucro<0;});});
+      linhas+='<button class="linha" data-act="cartao" data-v="'+p.id+'"><span><b>'+esc(p.nome)+(prej?' <span class="alerta">⚠️ prejuízo</span>':'')+'</b>'+ts.map(function(t){return '<small class="pl">'+(ts.length>1||fPeso==='todos'?'<span class="pg">'+nf(peso(t),0)+' g</span>':'')+ms.map(function(m){return '<span class="pm">'+(ms.length>1?(m==='cong'?'❄️ congelado ':'🔥 frito '):'')+'<b class="pr">'+brl(calc(p,t,m).preco)+'</b></span>';}).join('')+'</small>';}).join('')+'</span><span class="seta">›</span></button>';
     });
-    h+='</div>';
+    if(linhas){algum=true;h+='<h2 class="grupo">'+catLabel(g[0])+'</h2><div class="card lista-botoes">'+linhas+'</div>';}
   });
+  if(!algum)h+='<div class="card"><p class="lead" style="margin:0">Nenhum salgado com essa escolha. Mude os filtros acima.</p></div>';
   return h+'<button class="btn pri wide" data-act="addprod">+ Incluir novo salgado</button>'+linhaArquivados();
 }
 function mCartao(){
@@ -534,6 +551,8 @@ root.addEventListener('change',function(e){
   var v=el.value;if(el.hasAttribute('data-num'))v=el.value.trim()===''?null:parseNum(el.value);
   var f=ds.f,p=ds.id?prodById(ds.id):null;
   if(t==='rsim'){M.q=v||0;renderSoon();return;}
+  if(t==='fmodo'){fModo=v;local.set('dp-fmodo',v);render();return;}
+  if(t==='fpeso'){fPeso=v;local.set('dp-fpeso',v);render();return;}
   if(t==='param')S.params[f]=v==null?0:v;
   else if(t==='fixo')S.fixos[+ds.i][f]=(f==='valor'&&v==null)?0:v;
   else if(t==='ins'){var x=insById(ds.id);if(x)x[f]=(f!=='nome'&&v==null)?0:v;}
