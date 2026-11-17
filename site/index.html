@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Delipastel · Custos e Preços</title>
+<meta name="theme-color" content="#2b2118">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Delipastel">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#faf6ef;--card:#fff;--ink:#2b2118;--muted:#7a6a5a;--line:#eadfce;--acc:#c2410c;--acc2:#fff1e6;--ok:#15803d;--bad:#b91c1c;--ing:#8b5a2b;--emb:#d6a96b;--fix:#a8a29e;--ded:#e8a598;--luc:#4d9a5f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;font-size:15px;line-height:1.45}
+header{background:var(--ink);color:#fff;padding:18px 20px 0}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:1200px;margin:0 auto}
+.brand{font-family:'Fraunces',serif;font-size:24px;font-weight:700;letter-spacing:-.01em}
+.brand span{color:#fdba74}
+.sub{color:#d6c7b5;font-size:13px}
+.spacer{flex:1}
+.status{font-size:13px;color:#d6c7b5}
+.status.dirty{color:#fdba74}
+nav{display:flex;gap:4px;max-width:1200px;margin:14px auto 0;overflow-x:auto}
+nav button{background:none;border:0;color:#d6c7b5;padding:10px 14px;font:inherit;font-weight:500;border-radius:10px 10px 0 0;cursor:pointer;white-space:nowrap}
+nav button.on{background:var(--bg);color:var(--ink)}
+main{max-width:1200px;margin:0 auto;padding:20px}
+h2{font-family:'Fraunces',serif;font-size:21px;margin:0 0 4px}
+h3{font-size:15px;margin:0 0 10px}
+.hint{color:var(--muted);font-size:13px;margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.kpi .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font-family:'Fraunces',serif;font-size:24px;font-weight:600;margin-top:2px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th{font-size:12px;color:var(--muted);font-weight:500;text-align:left;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid #f3ece1;vertical-align:middle}
+td.n,th.n{text-align:right;white-space:nowrap}
+tr.grp td{background:var(--acc2);font-weight:700;color:var(--acc);font-size:13px}
+td.strong{font-weight:700}
+input,select,textarea{font:inherit;color:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fffdf9;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid #fdba74;border-color:var(--acc)}
+input.num{text-align:right;max-width:110px}
+input.w-s{max-width:80px}
+.btn{font:inherit;border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 12px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--acc)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.pri:disabled{opacity:.5;cursor:default}
+.btn.lite{background:transparent;color:#fff;border-color:#5a4a3c}
+.btn.x{border:0;background:none;color:var(--muted);padding:4px 8px;font-size:16px}
+.btn.x:hover{color:var(--bad)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pos{color:var(--ok)}.neg{color:var(--bad)}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:99px;background:var(--acc2);color:var(--acc);font-weight:700}
+.warn{background:#fef2f2;border:1px solid #fecaca;color:var(--bad);border-radius:10px;padding:10px 12px;margin-bottom:14px}
+.note{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:13px}
+.split{display:grid;grid-template-columns:240px 1fr;gap:16px}
+@media(max-width:760px){.split{grid-template-columns:1fr}}
+.plist button{display:flex;justify-content:space-between;width:100%;text-align:left;background:none;border:0;border-radius:9px;padding:8px 10px;font:inherit;cursor:pointer;color:inherit}
+.plist button.on{background:var(--acc2);color:var(--acc);font-weight:700}
+.plist .g{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:10px 10px 4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+label.f{display:block;font-size:12px;color:var(--muted)}
+label.f input,label.f select{margin-top:3px}
+.bars .b{display:grid;grid-template-columns:150px 1fr 90px;gap:10px;align-items:center;margin:6px 0;font-size:13px}
+.bar{display:flex;height:18px;border-radius:5px;overflow:hidden;background:#f3ece1}
+.bar i{display:block;height:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+@media(max-width:600px){.bars .b{grid-template-columns:90px 1fr 70px}}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:9;max-width:90vw}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:8;padding:20px}
+.modal .card{max-width:560px;width:100%}
+.modal textarea{height:200px;font-family:monospace;font-size:12px}
+.tot td{font-weight:700;border-top:2px solid var(--line)}
+.link{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--acc);cursor:pointer;text-align:left;text-decoration:underline;text-underline-offset:3px}
+tr.sub td{border-bottom-color:#f8f3ea}
+.modal{align-items:flex-start;overflow:auto}
+.modal .card.big{max-width:980px;max-height:calc(100vh - 40px);overflow:auto;margin:0}
+.comp{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;background:#fffdf9}
+.chip{padding:4px 10px;font-size:13px;border-radius:99px}
+.cnt{font-size:12px;color:var(--muted);font-weight:400}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login .card{max-width:380px;width:100%;text-align:center}
+header{padding-top:max(18px,env(safe-area-inset-top))}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+(function(){
+var SB_URL='https://ggsluymzpecvuxuydrev.supabase.co',SB_KEY='sb_publishable_a4QlBTy5a8E5pmaCJC-WUw_OI6bYTQf';
+var K_COD='delipastel-codigo',K_CACHE='delipastel-cache',K_DRAFT='delipastel-rascunho';
+var local={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}},del:function(k){try{localStorage.removeItem(k);}catch(e){}}};
+function clone(o){return JSON.parse(JSON.stringify(o));}
+var S=null,rev=null,atualizadoEm=null,dirty=false,saving=false,offline=false,modal=null,recipe=null,recipeSim={t:null,q:100},loginMsg='',carregando=false;
+function rpc(nome,body){return fetch(SB_URL+'/rest/v1/rpc/'+nome,{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json().catch(function(){return null;}).then(function(j){if(!r.ok){var t=JSON.stringify(j||'');throw new Error(/codigo_invalido/.test(t)?'codigo':/conflito/.test(t)?'conflito':'rede');}return j;});});}
+function aplicar(j){S=j.conteudo;rev=j.rev;atualizadoEm=j.atualizado_em;if(!S.pedido)S.pedido={};if(!selProd||!prodById(selProd))selProd=S.produtos[0]&&S.produtos[0].id;}
+(function(){var c=local.get(K_CACHE);if(c){try{aplicar(JSON.parse(c));}catch(e){}}var d=local.get(K_DRAFT);if(S&&d){try{d=JSON.parse(d);if(d.rev===rev&&d.data){S=d.data;dirty=true;}}catch(e){}}})();
+var TABS=[['precos','Preços de venda'],['fichas','Fichas técnicas'],['insumos','Insumos'],['custos','Custos fixos e taxas'],['pedido','Simular pedido']];
+var tab=(location.hash||'').slice(1);if(!TABS.some(function(t){return t[0]===tab;}))tab='precos';
+var selProd=S&&S.produtos[0]&&S.produtos[0].id;
+var root=document.getElementById('root');
+
+/* ---------- formatação ---------- */
+function brl(v,d){if(v==null||!isFinite(v))return '—';d=d==null?2:d;return v.toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:Math.min(2,d),maximumFractionDigits:d});}
+function nf(v,d){if(v==null||!isFinite(v))return '';return v.toLocaleString('pt-BR',{maximumFractionDigits:d==null?2:d,useGrouping:false});}
+function pct(v){return isFinite(v)?(v*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%':'—';}
+function parseNum(s){s=String(s).trim().replace(/\s|R\$|%|g$/g,'');if(s.indexOf(',')>=0)s=s.replace(/\./g,'').replace(',','.');var n=parseFloat(s);return isFinite(n)?n:0;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function uid(p){return p+Math.random().toString(36).slice(2,8);}
+function catLabel(c){return c==='Frito'?'Fritos':c==='Assado'?'Assados':c;}
+function qtyLabel(q,b){if(b==='g')return q>=1000?nf(q/1000,2)+' kg':nf(q,q<10?1:0)+' g';if(b==='ml')return q>=1000?nf(q/1000,2)+' L':nf(q,q<10?1:0)+' ml';return nf(q,q<10?1:0)+' un';}
+
+/* ---------- cálculos ---------- */
+function fator(u){return (u==='kg'||u==='L')?1000:1;}
+function base(u){return (u==='kg'||u==='g')?'g':(u==='L'||u==='ml')?'ml':'un';}
+function insById(id){for(var i=0;i<S.insumos.length;i++)if(S.insumos[i].id===id)return S.insumos[i];return null;}
+function prodById(id){for(var i=0;i<S.produtos.length;i++)if(S.produtos[i].id===id)return S.produtos[i];return null;}
+function tamById(p,id){for(var i=0;i<p.tamanhos.length;i++)if(p.tamanhos[i].id===id)return p.tamanhos[i];return null;}
+function custoBase(ins){var q=(ins.qtd||0)*fator(ins.unid);return q>0?(ins.preco||0)/q:0;}
+function compCusto(c){var t=0;c.itens.forEach(function(it){var x=insById(it.ins);if(x)t+=(it.qtd||0)*custoBase(x);});return t;}
+function compPorG(c){return c.rend>0?compCusto(c)/c.rend:0;}
+function peso(t){var s=0;for(var k in t.g)s+=(+t.g[k]||0);return s;}
+function totalFixos(){return S.fixos.reduce(function(a,f){return a+(+f.valor||0);},0);}
+function fixoPorG(){var P=S.params;return P.producaoKg>0?totalFixos()/(P.producaoKg*1000):0;}
+function fixoPorUn(){var P=S.params;return P.producaoUn>0?totalFixos()/P.producaoUn:0;}
+function dedPct(){var p=S.params;return ((+p.imposto||0)+(+p.taxaCartao||0)+(+p.comissao||0))/100;}
+function oleoPorMl(){var o=insById('oleo');return o?custoBase(o):0;}
+function calc(p,t){
+  var w=peso(t),ing=0,partes=[];
+  p.comps.forEach(function(c){var g=+t.g[c.id]||0,v=g*compPorG(c);ing+=v;partes.push({nome:c.nome,g:g,v:v});});
+  var oleo=(w/1000)*(+p.fritura||0)*oleoPorMl();
+  var perda=Math.min(+p.perda||0,95)/100;
+  var ingT=(ing+oleo)/(1-perda);
+  var emb=(t.emb!=null&&t.emb!=='')?+t.emb:(+S.params.embalagem||0);
+  var fix=S.params.rateioModo==='un'?fixoPorUn():w*fixoPorG();
+  var custo=ingT+emb+fix,ded=dedPct(),mg=(+S.params.margem||0)/100,div=1-ded-mg,sug=div>0?custo/div:NaN;
+  var manual=t.preco!=null&&t.preco>0,preco=manual?+t.preco:sug,lucro=preco*(1-ded)-custo;
+  return {peso:w,partes:partes,ingBruto:ing,oleo:oleo,ing:ingT,emb:emb,fix:fix,custo:custo,sug:sug,preco:preco,manual:manual,lucro:lucro,margem:preco>0?lucro/preco:NaN,dedV:preco*ded};
+}
+function necessidade(p,t,q,acc){
+  acc=acc||{};var perda=1-Math.min(+p.perda||0,95)/100;
+  p.comps.forEach(function(c){var g=q*(+t.g[c.id]||0)/perda;if(!(c.rend>0))return;var f=g/c.rend;c.itens.forEach(function(it){acc[it.ins]=(acc[it.ins]||0)+(it.qtd||0)*f;});});
+  var ml=q*peso(t)/1000*(+p.fritura||0)/perda;if(ml>0)acc['oleo']=(acc['oleo']||0)+ml;
+  return acc;
+}
+function grupos(){var g={};S.produtos.forEach(function(p){(g[p.cat]=g[p.cat]||[]).push(p);});return Object.keys(g).sort(function(a,b){return a==='Frito'?-1:b==='Frito'?1:a.localeCompare(b);}).map(function(k){return [k,g[k]];});}
+function tLabel(t){return (t.nome?esc(t.nome)+' · ':'')+nf(peso(t),1)+' g';}
+
+/* ---------- persistência (Supabase) ---------- */
+function touch(){dirty=true;local.set(K_DRAFT,JSON.stringify({rev:rev,data:S}));}
+function entrar(codigo,silencioso){
+  codigo=String(codigo||'').trim().toUpperCase();if(!codigo)return;
+  carregando=true;if(!silencioso){loginMsg='Entrando…';render();}
+  rpc('delipastel_ler',{codigo:codigo}).then(function(j){
+    carregando=false;offline=false;local.set(K_COD,codigo);
+    if(!j||!j.conteudo){loginMsg='Sem dados no servidor.';render();return;}
+    if(dirty&&j.rev===rev){render();return;} // mantém o que está sendo editado
+    if(dirty&&j.rev!==rev){modal=conflitoModal();}
+    else{aplicar(j);local.set(K_CACHE,JSON.stringify(j));}
+    loginMsg='';render();
+  }).catch(function(e){
+    carregando=false;
+    if(e.message==='codigo'){local.del(K_COD);loginMsg='Código errado. Confira e tente de novo.';render();return;}
+    offline=true;loginMsg=S?'':'Sem internet. Conecte e tente de novo.';render();
+  });
+}
+function save(forcar){
+  var cod=local.get(K_COD);if(!cod||!S)return;
+  saving=true;render();
+  var envio=clone(S);
+  rpc('delipastel_salvar',{codigo:cod,conteudo:envio,rev_base:forcar?null:rev}).then(function(j){
+    saving=false;dirty=false;offline=false;rev=j.rev;atualizadoEm=j.atualizado_em;
+    local.set(K_CACHE,JSON.stringify({conteudo:envio,rev:rev,atualizado_em:atualizadoEm}));local.del(K_DRAFT);
+    toast('Salvo.');render();
+  }).catch(function(e){
+    saving=false;
+    if(e.message==='conflito')modal=conflitoModal();
+    else if(e.message==='codigo'){toast('Código não aceito. Entre de novo.');}
+    else{offline=true;toast('Sem internet: suas alterações ficam guardadas aqui até salvar.');}
+    render();
+  });
+}
+function conflitoModal(){return '<div class="modal"><div class="card" data-stop><h3>Alguém salvou outra versão</h3><p class="hint">Os dados foram alterados em outro aparelho depois que você abriu o app. O que fazer com as suas alterações?</p><div class="row"><button class="btn pri" data-act="cf-manter">Salvar as minhas por cima</button><button class="btn" data-act="cf-baixar">Descartar as minhas e abrir a versão nova</button></div></div></div>';}
+function sair(){local.del(K_COD);local.del(K_CACHE);local.del(K_DRAFT);location.reload();}
+var tt;function toast(m){var el=document.querySelector('.toast');if(el)el.remove();el=document.createElement('div');el.className='toast';el.textContent=m;document.body.appendChild(el);clearTimeout(tt);tt=setTimeout(function(){el.remove();},3500);}
+
+/* ---------- componentes ---------- */
+function inp(t,attrs,val,cls,ph){return '<input type="text" inputmode="decimal" class="num '+(cls||'')+'" data-t="'+t+'" data-num '+attrs+' value="'+esc(val)+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>';}
+function txt(t,attrs,val,ph){return '<input type="text" data-t="'+t+'" '+attrs+' value="'+esc(val)+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>';}
+
+function header(){
+  var st=saving?'Salvando…':dirty?'● Alterações não salvas':offline?'Sem internet':'Tudo salvo'+(atualizadoEm?' · '+new Date(atualizadoEm).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'');
+  return '<header><div class="top"><div><div class="brand">Deli<span>pastel</span></div><div class="sub">Custo de produção e preço de venda</div></div><div class="spacer"></div>'+
+  '<span class="status '+(dirty?'dirty':'')+'">'+st+'</span><button class="btn lite" data-act="backup">Backup</button>'+
+  '<button class="btn lite" data-act="sair" title="Sair deste aparelho">Sair</button><button class="btn pri" data-act="save" '+(!dirty||saving?'disabled':'')+'>Salvar</button>'+
+  '</div><nav>'+TABS.map(function(t){return '<button data-act="tab" data-v="'+t[0]+'" class="'+(t[0]===tab?'on':'')+'">'+t[1]+'</button>';}).join('')+'</nav></header>';
+}
+
+/* ---------- aba: preços ---------- */
+function vPrecos(){
+  var all=[];S.produtos.forEach(function(p){p.tamanhos.forEach(function(t){all.push([p,t,calc(p,t)]);});});
+  var n=all.length||1,mM=0,lowest=null;all.forEach(function(r){mM+=r[2].margem||0;if(!lowest||r[2].margem<lowest[2].margem)lowest=r;});
+  var ded=dedPct(),mg=(+S.params.margem||0)/100;
+  var h='<h2>Preços de venda</h2><p class="hint">Clique no nome de um salgado para abrir a receita com custos e quantidades. Preço sugerido = custo ÷ (1 − impostos − taxas − margem). Digite em “Seu preço” o valor que você cobra para ver o lucro real; deixe vazio para usar o sugerido.</p>';
+  if(ded+mg>=1)h+='<div class="warn">Impostos + taxas + margem somam '+pct(ded+mg)+'. Precisa ser menos de 100%. Ajuste na aba “Custos fixos e taxas”.</div>';
+  h+='<div class="kpis"><div class="kpi"><div class="l">Salgados × tamanhos</div><div class="v">'+all.length+'</div></div><div class="kpi"><div class="l">Margem real média</div><div class="v">'+pct(mM/n)+'</div></div><div class="kpi"><div class="l">Custo fixo '+(S.params.rateioModo==='un'?'por unidade':'por 100 g')+'</div><div class="v">'+brl(S.params.rateioModo==='un'?fixoPorUn():fixoPorG()*100,3)+'</div></div><div class="kpi"><div class="l">Menor margem</div><div class="v" style="font-size:17px">'+(lowest?esc(lowest[0].nome)+' '+nf(lowest[2].peso,0)+' g · '+pct(lowest[2].margem):'—')+'</div></div></div>';
+  h+='<div class="card tw"><table><thead><tr><th>Salgado</th><th>Tamanho</th><th class="n">Ingredientes</th><th class="n">Embalagem</th><th class="n">Custo fixo</th><th class="n">Custo total</th><th class="n">Preço sugerido</th><th class="n">Seu preço</th><th class="n">Cento</th><th class="n">Lucro / un.</th><th class="n">Margem</th></tr></thead><tbody>';
+  grupos().forEach(function(g){
+    h+='<tr class="grp"><td colspan="11">'+esc(catLabel(g[0]))+'</td></tr>';
+    g[1].forEach(function(p){p.tamanhos.forEach(function(t,i){var c=calc(p,t);
+      h+='<tr class="'+(i===0?'first':'sub')+'"><td>'+(i===0?'<button class="link" data-act="receita" data-v="'+p.id+'">'+esc(p.nome)+'</button>':'')+'</td><td>'+tLabel(t)+'</td><td class="n">'+brl(c.ing,3)+'</td><td class="n">'+brl(c.emb,3)+'</td><td class="n">'+brl(c.fix,3)+'</td><td class="n strong">'+brl(c.custo,3)+'</td><td class="n">'+brl(c.sug)+'</td><td class="n">'+inp('tam','data-id="'+p.id+'" data-tid="'+t.id+'" data-f="preco" data-nullable',c.manual?nf(t.preco,2):'','w-s',isFinite(c.sug)?nf(c.sug,2):'')+'</td><td class="n">'+brl(c.preco*100)+'</td><td class="n '+(c.lucro<0?'neg':'pos')+'">'+brl(c.lucro,3)+'</td><td class="n '+(c.margem<0?'neg':'')+'">'+pct(c.margem)+'</td></tr>';
+    });});
+  });
+  h+='</tbody></table></div><div class="row"><button class="btn" data-act="copyprecos">Copiar tabela de preços</button><button class="btn" data-act="limparprecos">Voltar todos ao preço sugerido</button></div>';
+  return h;
+}
+
+/* ---------- receita (janela) ---------- */
+function vReceita(){
+  var p=prodById(recipe);if(!p)return '';
+  if(!recipeSim.t||!tamById(p,recipeSim.t))recipeSim.t=p.tamanhos[0]&&p.tamanhos[0].id;
+  var h='<div class="modal" data-act="closerec"><div class="card big" data-stop><div class="row"><div><div class="tag">'+esc(p.cat)+'</div><h2 style="margin-top:4px">'+esc(p.nome)+'</h2></div><span class="spacer"></span><button class="btn" data-act="editar" data-v="'+p.id+'">Editar receita</button><button class="btn x" data-act="closerec" style="font-size:22px">×</button></div>';
+  h+='<p class="hint">Perda: '+nf(p.perda)+'%'+(+p.fritura>0?' · Óleo de fritura: '+nf(p.fritura)+' ml por kg de salgado':'')+'</p>';
+  p.comps.forEach(function(c){var tot=compCusto(c);
+    h+='<div class="comp"><div class="row"><h3 style="margin:0">'+esc(c.nome)+'</h3><span class="spacer"></span><span class="hint" style="margin:0">Rende '+qtyLabel(c.rend,'g')+' · <b>'+brl(compPorG(c)*1000)+' / kg</b></span></div><div class="tw"><table><thead><tr><th>Ingrediente</th><th class="n">Quantidade</th><th class="n">Preço de compra</th><th class="n">Custo</th><th class="n">% da '+esc(c.nome.toLowerCase())+'</th></tr></thead><tbody>';
+    c.itens.forEach(function(it){var x=insById(it.ins);if(!x)return;var v=(it.qtd||0)*custoBase(x);
+      h+='<tr><td>'+esc(x.nome)+'</td><td class="n">'+qtyLabel(it.qtd||0,base(x.unid))+'</td><td class="n">'+brl(x.preco)+' / '+nf(x.qtd,3)+' '+x.unid+'</td><td class="n">'+brl(v)+'</td><td class="n">'+pct(tot>0?v/tot:0)+'</td></tr>';});
+    h+='<tr class="tot"><td>Total da receita</td><td></td><td></td><td class="n">'+brl(tot)+'</td><td></td></tr></tbody></table></div></div>';
+  });
+  h+='<h3 style="margin-top:18px">Custo por tamanho</h3><div class="tw"><table><thead><tr><th>Tamanho</th>'+p.comps.map(function(c){return '<th class="n">'+esc(c.nome)+'</th>';}).join('')+(+p.fritura>0?'<th class="n">Óleo fritura</th>':'')+'<th class="n">Ingredientes*</th><th class="n">Custo total</th><th class="n">Preço</th><th class="n">Lucro</th></tr></thead><tbody>';
+  p.tamanhos.forEach(function(t){var c=calc(p,t);
+    h+='<tr><td>'+tLabel(t)+'</td>'+c.partes.map(function(x){return '<td class="n">'+nf(x.g,1)+' g · '+brl(x.v,3)+'</td>';}).join('')+(+p.fritura>0?'<td class="n">'+brl(c.oleo,3)+'</td>':'')+'<td class="n">'+brl(c.ing,3)+'</td><td class="n strong">'+brl(c.custo,3)+'</td><td class="n">'+brl(c.preco)+'</td><td class="n '+(c.lucro<0?'neg':'pos')+'">'+brl(c.lucro,3)+'</td></tr>';});
+  h+='</tbody></table></div><p class="hint">* Ingredientes já com a perda de '+nf(p.perda)+'% incluída. O custo total soma embalagem e custo fixo.</p>';
+  // quanto preciso
+  var t=tamById(p,recipeSim.t);
+  if(t){var need=necessidade(p,t,+recipeSim.q||0),tot=0;
+    h+='<div class="comp"><h3>Quanto preciso para produzir</h3><div class="row" style="margin-bottom:10px"><input type="text" inputmode="numeric" class="num w-s" data-t="rsim" data-f="q" data-num value="'+nf(recipeSim.q,0)+'"><span>unidades de</span><select data-t="rsim" data-f="t" style="width:auto">'+p.tamanhos.map(function(x){return '<option value="'+x.id+'"'+(x.id===t.id?' selected':'')+'>'+tLabel(x)+'</option>';}).join('')+'</select></div><div class="tw"><table><thead><tr><th>Ingrediente</th><th class="n">Quantidade</th><th class="n">Custo</th></tr></thead><tbody>';
+    Object.keys(need).forEach(function(k){var x=insById(k);if(!x)return;var v=need[k]*custoBase(x);tot+=v;h+='<tr><td>'+esc(x.nome)+'</td><td class="n">'+qtyLabel(need[k],base(x.unid))+'</td><td class="n">'+brl(v)+'</td></tr>';});
+    var c=calc(p,t),q=+recipeSim.q||0;
+    h+='<tr class="tot"><td>Total em ingredientes</td><td></td><td class="n">'+brl(tot)+'</td></tr></tbody></table></div><p class="hint" style="margin:8px 0 0">Custo total (com embalagem e fixo): <b>'+brl(c.custo*q)+'</b> · Faturamento: <b>'+brl(c.preco*q)+'</b> · Lucro: <b class="'+(c.lucro<0?'neg':'pos')+'">'+brl(c.lucro*q)+'</b></p></div>';
+  }
+  return h+'</div></div>';
+}
+
+/* ---------- aba: fichas ---------- */
+function vFichas(){
+  var p=prodById(selProd)||S.produtos[0];if(p)selProd=p.id;
+  var h='<h2>Fichas técnicas</h2><p class="hint">Monte a receita em partes (massa, recheio, empanamento). Em cada parte, informe quanto ela rende pronta, em gramas — pese a massa ou o recheio depois de pronto. Depois defina os tamanhos: quantos gramas de cada parte vão em cada salgado.</p><div class="split"><div class="card plist">';
+  grupos().forEach(function(g){h+='<div class="g">'+esc(catLabel(g[0]))+'</div>';g[1].forEach(function(x){h+='<button data-act="sel" data-v="'+x.id+'" class="'+(p&&x.id===p.id?'on':'')+'"><span>'+esc(x.nome)+'</span><span class="cnt">'+x.tamanhos.length+' tam.</span></button>';});});
+  h+='<div style="margin:10px"><button class="btn" data-act="addprod">+ Novo salgado</button></div></div><div>';
+  if(!p)return h+'</div></div>';
+  var pa='data-id="'+p.id+'"';
+  h+='<div class="card"><div class="grid"><label class="f">Nome'+txt('prod',pa+' data-f="nome"',p.nome)+'</label><label class="f">Categoria<select data-t="prod" '+pa+' data-f="cat">'+['Frito','Assado','Outro'].map(function(o){return '<option'+(o===p.cat?' selected':'')+'>'+o+'</option>';}).join('')+'</select></label><label class="f">Perda (%)'+inp('prod',pa+' data-f="perda"',nf(p.perda))+'</label><label class="f">Óleo de fritura (ml por kg)'+inp('prod',pa+' data-f="fritura"',nf(p.fritura))+'</label></div><div class="row"><button class="btn" data-act="receita" data-v="'+p.id+'">Ver receita e custos</button><span class="spacer"></span><button class="btn" data-act="dupprod" '+pa+'>Duplicar</button><button class="btn" data-act="delprod" '+pa+' style="color:var(--bad)">Excluir salgado</button></div></div>';
+  // componentes
+  p.comps.forEach(function(c,ci){var tot=compCusto(c),ca=pa+' data-ci="'+ci+'"';
+    h+='<div class="card"><div class="grid" style="grid-template-columns:2fr 1fr 1fr auto;align-items:end"><label class="f">Parte da receita'+txt('comp',ca+' data-f="nome"',c.nome)+'</label><label class="f">Rendimento pronto (g)'+inp('comp',ca+' data-f="rend"',nf(c.rend,1))+'</label><div><div class="hint" style="margin:0">Custo</div><b>'+brl(tot)+'</b> · '+brl(compPorG(c)*1000)+'/kg</div><button class="btn x" data-act="delcomp" '+ca+' title="Excluir parte">×</button></div>';
+    h+='<div class="tw"><table><thead><tr><th>Ingrediente</th><th class="n">Quantidade</th><th></th><th class="n">Custo</th><th class="n">%</th><th></th></tr></thead><tbody>';
+    c.itens.forEach(function(it,i){var x=insById(it.ins),v=x?(it.qtd||0)*custoBase(x):0,ia=ca+' data-i="'+i+'"';
+      h+='<tr><td><select data-t="item" '+ia+' data-f="ins">'+S.insumos.map(function(o){return '<option value="'+o.id+'"'+(o.id===it.ins?' selected':'')+'>'+esc(o.nome)+'</option>';}).join('')+'</select></td><td class="n">'+inp('item',ia+' data-f="qtd"',nf(it.qtd,3))+'</td><td>'+(x?base(x.unid):'')+'</td><td class="n">'+brl(v)+'</td><td class="n">'+pct(tot>0?v/tot:0)+'</td><td><button class="btn x" data-act="delitem" '+ia+'>×</button></td></tr>';});
+    h+='</tbody></table></div><button class="btn" data-act="additem" '+ca+' style="margin-top:8px">+ Ingrediente</button></div>';
+  });
+  h+='<div class="row" style="margin-bottom:16px"><button class="btn" data-act="addcomp" '+pa+'>+ Nova parte (ex.: Recheio, Cobertura)</button></div>';
+  // tamanhos
+  h+='<div class="card"><h3>Tamanhos</h3><p class="hint">Digite o peso total para redistribuir na mesma proporção, ou ajuste os gramas de cada parte. Embalagem vazia usa o padrão de '+brl(+S.params.embalagem||0,3)+'.</p><div class="tw"><table><thead><tr><th>Nome</th><th class="n">Peso total (g)</th>'+p.comps.map(function(c){return '<th class="n">'+esc(c.nome)+' (g)</th>';}).join('')+'<th class="n">Embalagem (R$)</th><th class="n">Custo total</th><th></th></tr></thead><tbody>';
+  p.tamanhos.forEach(function(t){var ta=pa+' data-tid="'+t.id+'"',c=calc(p,t);
+    h+='<tr><td>'+txt('tam',ta+' data-f="nome"',t.nome,'ex.: Festa')+'</td><td class="n">'+inp('tam',ta+' data-f="peso"',nf(peso(t),1),'w-s')+'</td>'+p.comps.map(function(cp){return '<td class="n">'+inp('tamg',ta+' data-cid="'+cp.id+'"',nf(t.g[cp.id]||0,1),'w-s')+'</td>';}).join('')+'<td class="n">'+inp('tam',ta+' data-f="emb" data-nullable',t.emb!=null?nf(t.emb,3):'','w-s',nf(+S.params.embalagem||0,3))+'</td><td class="n strong">'+brl(c.custo,3)+'</td><td><button class="btn x" data-act="deltam" '+ta+'>×</button></td></tr>';});
+  h+='</tbody></table></div><div class="row" style="margin-top:8px">'+[20,30,50,80,100,120].map(function(w){return '<button class="btn chip" data-act="addtam" '+pa+' data-v="'+w+'">+ '+w+' g</button>';}).join('')+'<button class="btn chip" data-act="addtam" '+pa+' data-v="">+ outro</button></div></div>';
+  return h+'</div></div>';
+}
+
+/* ---------- aba: insumos ---------- */
+function vInsumos(){
+  var uso={};S.produtos.forEach(function(p){var seen={};p.comps.forEach(function(c){c.itens.forEach(function(it){if(!seen[it.ins]){seen[it.ins]=1;uso[it.ins]=(uso[it.ins]||0)+1;}});});});
+  var h='<h2>Insumos</h2><p class="hint">Cadastre o que você compra: tamanho da embalagem e quanto pagou. O app calcula o custo por grama, ml ou unidade e atualiza todas as receitas. O insumo “Óleo de soja” é usado também para calcular o óleo de fritura. Os preços iniciais são exemplos.</p><div class="card tw"><table><thead><tr><th>Insumo</th><th class="n">Embalagem</th><th>Unidade</th><th class="n">Preço pago</th><th class="n">Custo por g / ml / un.</th><th class="n">Usado em</th><th></th></tr></thead><tbody>';
+  S.insumos.forEach(function(x){
+    h+='<tr><td>'+txt('ins','data-id="'+x.id+'" data-f="nome"',x.nome)+'</td><td class="n">'+inp('ins','data-id="'+x.id+'" data-f="qtd"',nf(x.qtd,3),'w-s')+'</td><td><select data-t="ins" data-id="'+x.id+'" data-f="unid" style="width:auto">'+['kg','g','L','ml','un'].map(function(u){return '<option'+(u===x.unid?' selected':'')+'>'+u+'</option>';}).join('')+'</select></td><td class="n">'+inp('ins','data-id="'+x.id+'" data-f="preco"',nf(x.preco,2),'w-s')+'</td><td class="n">'+brl(custoBase(x),4)+' / '+base(x.unid)+'</td><td class="n">'+(uso[x.id]||0)+' salgado'+((uso[x.id]||0)===1?'':'s')+'</td><td><button class="btn x" data-act="delins" data-id="'+x.id+'">×</button></td></tr>';});
+  return h+'</tbody></table><div style="margin-top:10px"><button class="btn" data-act="addins">+ Novo insumo</button></div></div>';
+}
+
+/* ---------- aba: custos ---------- */
+function vCustos(){
+  var P=S.params,tf=totalFixos(),kg=P.rateioModo!=='un';
+  var h='<h2>Custos fixos e taxas</h2><p class="hint">Os custos fixos do mês são divididos pela produção e entram no custo de cada salgado. As porcentagens saem do preço de venda.</p>';
+  h+='<div class="card"><h3>Sobre o preço de venda</h3><div class="grid"><label class="f">Imposto (%) — ex.: Simples/MEI'+inp('param','data-f="imposto"',nf(P.imposto))+'</label><label class="f">Taxa de cartão / Pix (%)'+inp('param','data-f="taxaCartao"',nf(P.taxaCartao))+'</label><label class="f">Comissão / app de entrega (%)'+inp('param','data-f="comissao"',nf(P.comissao))+'</label><label class="f">Margem de lucro desejada (%)'+inp('param','data-f="margem"',nf(P.margem))+'</label></div>';
+  h+='<h3>Produção e embalagem</h3><div class="grid"><label class="f">Dividir custos fixos por<select data-t="param" data-f="rateioModo"><option value="kg"'+(kg?' selected':'')+'>Peso (recomendado)</option><option value="un"'+(!kg?' selected':'')+'>Unidade</option></select></label>'+(kg?'<label class="f">Produção mensal (kg)'+inp('param','data-f="producaoKg"',nf(P.producaoKg,1))+'</label>':'<label class="f">Produção mensal (unidades)'+inp('param','data-f="producaoUn"',nf(P.producaoUn,0))+'</label>')+'<label class="f">Embalagem padrão por salgado (R$)'+inp('param','data-f="embalagem"',nf(P.embalagem,3))+'</label></div><p class="hint" style="margin:0">Por peso, uma coxinha de 120 g carrega 6 vezes mais custo fixo que uma de 20 g, o que é mais justo quando há tamanhos diferentes.</p></div>';
+  h+='<div class="card tw"><h3>Custos fixos mensais</h3><table><thead><tr><th>Despesa</th><th class="n">Valor / mês</th><th></th></tr></thead><tbody>';
+  S.fixos.forEach(function(f,i){h+='<tr><td>'+txt('fixo','data-i="'+i+'" data-f="nome"',f.nome)+'</td><td class="n">'+inp('fixo','data-i="'+i+'" data-f="valor"',nf(f.valor,2))+'</td><td><button class="btn x" data-act="delfixo" data-v="'+i+'">×</button></td></tr>';});
+  h+='<tr class="tot"><td>Total mensal</td><td class="n">'+brl(tf)+'</td><td></td></tr><tr><td>'+(kg?'Custo fixo por kg produzido':'Custo fixo por salgado')+'</td><td class="n strong">'+(kg?brl(fixoPorG()*1000):brl(fixoPorUn(),3))+'</td><td></td></tr></tbody></table><div style="margin-top:10px"><button class="btn" data-act="addfixo">+ Nova despesa</button></div></div>';
+  var sk=0,su=0,n=0;S.produtos.forEach(function(p){p.tamanhos.forEach(function(t){var c=calc(p,t);if(isFinite(c.preco)&&c.peso>0){var m=c.preco*(1-dedPct())-c.ing-c.emb;su+=m;sk+=m/c.peso*1000;n++;}});});
+  if(n){h+='<div class="note"><b>Ponto de equilíbrio:</b> ';if(kg){var mk=sk/n;h+='em média cada kg vendido deixa '+brl(mk)+' depois de ingredientes, embalagem, impostos e taxas. Para pagar '+brl(tf)+' de custos fixos você precisa vender cerca de <b>'+(mk>0?Math.ceil(tf/mk).toLocaleString('pt-BR'):'—')+' kg de salgados por mês</b>.';}else{var mu=su/n;h+='em média cada salgado deixa '+brl(mu,3)+'. Para pagar '+brl(tf)+' você precisa vender cerca de <b>'+(mu>0?Math.ceil(tf/mu).toLocaleString('pt-BR'):'—')+' salgados por mês</b>.';}h+='</div>';}
+  return h;
+}
+
+/* ---------- aba: pedido ---------- */
+function vPedido(){
+  var h='<h2>Simular pedido</h2><p class="hint">Digite as quantidades de uma encomenda (ou da produção do dia) para ver custo, faturamento, lucro e a lista de compras.</p><div class="card tw"><table><thead><tr><th>Salgado</th><th>Tamanho</th><th class="n">Quantidade</th><th class="n">Preço un.</th><th class="n">Custo</th><th class="n">Faturamento</th><th class="n">Lucro</th></tr></thead><tbody>';
+  var T={q:0,c:0,f:0,l:0,kg:0},need={};
+  grupos().forEach(function(g){h+='<tr class="grp"><td colspan="7">'+esc(catLabel(g[0]))+'</td></tr>';g[1].forEach(function(p){p.tamanhos.forEach(function(t,i){var k=p.id+'|'+t.id,q=+S.pedido[k]||0,c=calc(p,t);
+    T.q+=q;T.c+=q*c.custo;T.f+=q*c.preco;T.l+=q*c.lucro;T.kg+=q*c.peso/1000;if(q>0)necessidade(p,t,q,need);
+    h+='<tr><td>'+(i===0?esc(p.nome):'')+'</td><td>'+tLabel(t)+'</td><td class="n">'+inp('pedido','data-k="'+k+'"',q?nf(q,0):'','w-s','0')+'</td><td class="n">'+brl(c.preco)+'</td><td class="n">'+(q?brl(q*c.custo):'')+'</td><td class="n">'+(q?brl(q*c.preco):'')+'</td><td class="n '+(q*c.lucro<0?'neg':'pos')+'">'+(q?brl(q*c.lucro):'')+'</td></tr>';});});});
+  h+='<tr class="tot"><td>Total</td><td>'+nf(T.kg,2)+' kg</td><td class="n">'+T.q.toLocaleString('pt-BR')+'</td><td></td><td class="n">'+brl(T.c)+'</td><td class="n">'+brl(T.f)+'</td><td class="n '+(T.l<0?'neg':'pos')+'">'+brl(T.l)+'</td></tr></tbody></table><div class="row" style="margin-top:10px"><button class="btn" data-act="limparpedido">Limpar</button></div></div>';
+  var keys=Object.keys(need);
+  if(keys.length){var tot=0;h+='<div class="card tw"><h3>Lista de compras para este pedido</h3><table><thead><tr><th>Insumo</th><th class="n">Quantidade</th><th class="n">Custo estimado</th></tr></thead><tbody>';
+    keys.sort(function(a,b){var x=insById(a),y=insById(b);return (x?x.nome:'').localeCompare(y?y.nome:'');}).forEach(function(k){var x=insById(k);if(!x)return;var v=need[k]*custoBase(x);tot+=v;h+='<tr><td>'+esc(x.nome)+'</td><td class="n">'+qtyLabel(need[k],base(x.unid))+'</td><td class="n">'+brl(v)+'</td></tr>';});
+    h+='<tr class="tot"><td>Total em ingredientes</td><td></td><td class="n">'+brl(tot)+'</td></tr></tbody></table></div>';}
+  return h;
+}
+
+function vLogin(){
+  return '<div class="login"><div class="card"><div class="brand" style="color:var(--ink)">Deli<span style="color:var(--acc)">pastel</span></div><p class="hint">Custo de produção e preço de venda. Digite o código da fábrica para entrar.</p><form id="flogin"><input id="cod" autocomplete="off" autocapitalize="characters" placeholder="Código (ex.: DELI-XXXXXX)" style="text-transform:uppercase"><button class="btn pri" style="margin-top:10px;width:100%">Entrar</button></form><p class="hint" style="margin-top:10px">'+esc(loginMsg)+'</p></div></div>';
+}
+function render(){
+  if(!S){root.innerHTML=vLogin();var f=document.getElementById('flogin');if(f)f.addEventListener('submit',function(e){e.preventDefault();entrar(document.getElementById('cod').value);});return;}
+  var y=window.scrollY,my=0,mb=document.querySelector('.modal .card');if(mb)my=mb.scrollTop;
+  var v={precos:vPrecos,fichas:vFichas,insumos:vInsumos,custos:vCustos,pedido:vPedido}[tab]();
+  root.innerHTML=header()+'<main>'+v+'</main>'+(recipe?vReceita():'')+(modal||'');
+  try{window.scrollTo(0,y);}catch(e){}
+  mb=document.querySelector('.modal .card');if(mb&&my)mb.scrollTop=my;
+  document.body.style.overflow=(recipe||modal)?'hidden':'';
+}
+
+/* ---------- eventos ---------- */
+root.addEventListener('change',function(e){
+  var el=e.target,ds=el.dataset||{},t=ds.t;if(!t)return;
+  var v=el.value;if(el.hasAttribute('data-num'))v=(el.value.trim()===''&&el.hasAttribute('data-nullable'))?null:parseNum(el.value);
+  var f=ds.f,p=ds.id?prodById(ds.id):null;
+  if(t==='rsim'){recipeSim[f]=v;render();return;}
+  if(t==='param')S.params[f]=v;
+  else if(t==='fixo')S.fixos[+ds.i][f]=v;
+  else if(t==='ins'){var x=insById(ds.id);if(x)x[f]=v;}
+  else if(t==='prod'&&p)p[f]=v;
+  else if(t==='comp'&&p)p.comps[+ds.ci][f]=v;
+  else if(t==='item'&&p)p.comps[+ds.ci].itens[+ds.i][f]=v;
+  else if(t==='tam'&&p){var tm=tamById(p,ds.tid);if(!tm)return;
+    if(f==='peso'){var old=peso(tm);if(old>0){for(var k in tm.g)tm.g[k]=Math.round(tm.g[k]*v/old*10)/10;}else if(p.comps[0]){tm.g={};tm.g[p.comps[0].id]=v;}}
+    else tm[f]=v;}
+  else if(t==='tamg'&&p){var tg=tamById(p,ds.tid);if(tg)tg.g[ds.cid]=v;}
+  else if(t==='pedido')S.pedido[ds.k]=v;
+  touch();render();
+});
+root.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.dataset.t)e.target.blur();if(e.key==='Escape'&&(recipe||modal)){recipe=null;modal=null;render();}});
+function propDe(p){var s=null;p.tamanhos.forEach(function(t){if(!s&&peso(t)>0)s=t;});var r={};var w=s?peso(s):0;p.comps.forEach(function(c){r[c.id]=w>0?(+s.g[c.id]||0)/w:1/p.comps.length;});return r;}
+root.addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]');if(!b)return;
+  var a=b.dataset.act,v=b.dataset.v,id=b.dataset.id,p=id?prodById(id):null;
+  if((a==='closerec'||a==='closemodal')&&b.classList.contains('modal')&&e.target.closest('[data-stop]'))return;
+  if(a==='tab'){tab=v;try{history.replaceState(null,'','#'+v);}catch(er){}render();try{window.scrollTo(0,0);}catch(er){}return;}
+  if(a==='receita'){recipe=v;recipeSim={t:null,q:100};render();var mc=document.querySelector('.modal .card');if(mc)mc.scrollTop=0;return;}
+  if(a==='closerec'){recipe=null;render();return;}
+  if(a==='editar'){recipe=null;selProd=v;tab='fichas';try{history.replaceState(null,'','#fichas');}catch(er){}render();try{window.scrollTo(0,0);}catch(er){}return;}
+  if(a==='sel'){selProd=v;render();return;}
+  if(a==='save'){save();return;}
+  if(a==='sair'){if(dirty&&b.dataset.confirm!=='1'){b.dataset.confirm='1';b.textContent='Há alterações não salvas. Sair mesmo?';return;}sair();return;}
+  if(a==='cf-manter'){modal=null;save(true);return;}
+  if(a==='cf-baixar'){modal=null;dirty=false;local.del(K_DRAFT);rev=null;entrar(local.get(K_COD),true);return;}
+  if(a==='backup'){modal='<div class="modal" data-act="closemodal"><div class="card" data-stop><h3>Backup dos dados</h3><p class="hint">Copie o texto abaixo e guarde em um arquivo. Para restaurar, cole um backup aqui e clique em Importar.</p><textarea id="bk">'+esc(JSON.stringify(S))+'</textarea><div class="row" style="margin-top:10px"><button class="btn" data-act="copybk">Copiar</button><button class="btn" data-act="importbk">Importar</button><span class="spacer"></span><button class="btn" data-act="closemodal">Fechar</button></div></div></div>';render();return;}
+  if(a==='closemodal'){modal=null;render();return;}
+  if(a==='copybk'){copy(document.getElementById('bk').value,'Backup copiado.');return;}
+  if(a==='importbk'){try{var o=JSON.parse(document.getElementById('bk').value);if(o.schema!==2||!o.produtos||!o.insumos||!o.params)throw 0;delete o.rev;if(!o.pedido)o.pedido={};S=o;selProd=S.produtos[0]&&S.produtos[0].id;modal=null;touch();render();toast('Dados importados. Clique em Salvar para manter.');}catch(er){toast('Esse texto não é um backup válido.');}return;}
+  if(a==='copyprecos'){var L=['Salgado\tTamanho\tCusto/un\tPreço/un\tCento'];S.produtos.forEach(function(x){x.tamanhos.forEach(function(t){var c=calc(x,t);L.push(x.nome+'\t'+(t.nome?t.nome+' ':'')+nf(c.peso,1)+' g\t'+nf(c.custo,3)+'\t'+nf(c.preco,2)+'\t'+nf(c.preco*100,2));});});copy(L.join('\n'),'Tabela copiada — cole no Excel ou WhatsApp.');return;}
+  if(a==='limparprecos'){S.produtos.forEach(function(x){x.tamanhos.forEach(function(t){t.preco=null;});});touch();render();return;}
+  if(a==='limparpedido'){S.pedido={};touch();render();return;}
+  if(!p&&['additem','delitem','addcomp','delcomp','addtam','deltam','dupprod','delprod'].indexOf(a)>=0)return;
+  if(a==='additem'){p.comps[+b.dataset.ci].itens.push({ins:S.insumos[0].id,qtd:0});touch();render();return;}
+  if(a==='delitem'){p.comps[+b.dataset.ci].itens.splice(+b.dataset.i,1);touch();render();return;}
+  if(a==='addcomp'){var nc={id:uid('c'),nome:p.comps.length?'Recheio':'Massa',rend:1000,itens:[]};p.comps.push(nc);p.tamanhos.forEach(function(t){t.g[nc.id]=0;});touch();render();return;}
+  if(a==='delcomp'){if(b.dataset.confirm!=='1'){b.dataset.confirm='1';b.textContent='Excluir?';b.style.fontSize='13px';return;}var cc=p.comps.splice(+b.dataset.ci,1)[0];p.tamanhos.forEach(function(t){delete t.g[cc.id];});touch();render();return;}
+  if(a==='addtam'){var w=v===''?50:+v,pr=propDe(p),g={};p.comps.forEach(function(c){g[c.id]=Math.round(w*pr[c.id]*10)/10;});p.tamanhos.push({id:uid('t'),nome:'',g:g,preco:null,emb:null});touch();render();return;}
+  if(a==='deltam'){if(p.tamanhos.length<=1){toast('O salgado precisa de pelo menos um tamanho.');return;}p.tamanhos=p.tamanhos.filter(function(t){return t.id!==b.dataset.tid;});touch();render();return;}
+  if(a==='addprod'){var np={id:uid('p'),nome:'Novo salgado',cat:'Frito',perda:5,fritura:100,comps:[{id:'massa',nome:'Massa',rend:1000,itens:[]},{id:'rech',nome:'Recheio',rend:1000,itens:[]}],tamanhos:[{id:'t1',nome:'Festa',g:{massa:12,rech:8},preco:null,emb:null}]};S.produtos.push(np);selProd=np.id;touch();render();return;}
+  if(a==='dupprod'){var cp=clone(p);cp.id=uid('p');cp.nome+=' (cópia)';cp.tamanhos.forEach(function(t){t.preco=null;});S.produtos.push(cp);selProd=cp.id;touch();render();return;}
+  if(a==='delprod'){if(b.dataset.confirm!=='1'){b.dataset.confirm='1';b.textContent='Clique de novo para excluir';return;}S.produtos=S.produtos.filter(function(x){return x.id!==id;});Object.keys(S.pedido).forEach(function(k){if(k.indexOf(id+'|')===0)delete S.pedido[k];});selProd=S.produtos[0]&&S.produtos[0].id;touch();render();return;}
+  if(a==='addins'){S.insumos.push({id:uid('i'),nome:'Novo insumo',unid:'kg',qtd:1,preco:0});touch();render();return;}
+  if(a==='delins'){var users=S.produtos.filter(function(x){return x.comps.some(function(c){return c.itens.some(function(it){return it.ins===id;});});}).map(function(x){return x.nome;});if(id==='oleo'){toast('O óleo de soja é usado no cálculo da fritura; edite o preço em vez de excluir.');return;}if(users.length){toast('Usado em: '+users.join(', ')+'. Remova das receitas antes.');return;}S.insumos=S.insumos.filter(function(x){return x.id!==id;});touch();render();return;}
+  if(a==='addfixo'){S.fixos.push({nome:'Nova despesa',valor:0});touch();render();return;}
+  if(a==='delfixo'){S.fixos.splice(+v,1);touch();render();return;}
+});
+function copy(t,msg){try{navigator.clipboard.writeText(t).then(function(){toast(msg);},function(){toast('Não consegui copiar; selecione e copie manualmente.');});}catch(e){toast('Não consegui copiar; selecione e copie manualmente.');}}
+document.addEventListener('visibilitychange',function(){var c=local.get(K_COD);if(c&&!document.hidden&&!dirty&&!saving)entrar(c,true);});
+window.addEventListener('online',function(){offline=false;render();});
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});
+window.addEventListener('hashchange',function(){var h=location.hash.slice(1);if(TABS.some(function(t){return t[0]===h;})&&h!==tab){tab=h;render();}});
+render();
+(function(){var c=local.get(K_COD);if(c)entrar(c,!!S);})();
+})();
+</script>
+</body>
+</html>
