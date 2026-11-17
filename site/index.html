@@ -201,6 +201,7 @@ function necessidade(p,t,q,acc){
 function ativos(){return S.produtos.filter(function(p){return !p.arquivado;});}
 function arquivados(){return S.produtos.filter(function(p){return p.arquivado;});}
 function grupos(){var g={};ativos().forEach(function(p){(g[p.cat]=g[p.cat]||[]).push(p);});return Object.keys(g).sort(function(a,b){return a==='Frito'?-1:b==='Frito'?1:a.localeCompare(b);}).map(function(k){return [k,g[k]];});}
+function nomeTamanho(w){return w<=35?'Festa':w<100?'Média':'Grande';}
 function tNome(t){return (t.nome?esc(t.nome)+' · ':'')+nf(peso(t),0)+' g';}
 function usoDe(id){return S.produtos.filter(function(p){return p.comps.some(function(c){return c.itens.some(function(it){return it.ins===id;});});});}
 
@@ -300,7 +301,7 @@ function mCartao(){
       '<div><span class="lbl">Custa</span><span class="val">'+brl(c.custo)+'</span></div>'+
       '<div><span class="lbl">'+(c.manual?'Seu preço':'Preço sugerido')+'</span><span class="val big">'+brl(c.preco)+'</span><span class="lbl">cento '+brl(c.preco*100)+'</span></div>'+
       '<div><span class="lbl">Lucro</span><span class="val '+(c.lucro<0?'neg':'pos')+'">'+brl(c.lucro)+'</span><span class="lbl">'+pct(c.margem)+'</span></div>'+
-      '</div><button class="btn wide" data-act="preco" data-id="'+p.id+'" data-tid="'+t.id+'">✏️ Mudar preço</button></div>';
+      '</div><button class="btn wide" data-act="preco" data-id="'+p.id+'" data-tid="'+t.id+'">✏️ Mudar preço</button>'+(p.tamanhos.length>1?'<button class="btn link-danger" data-act="deltam" data-id="'+p.id+'" data-tid="'+t.id+'">🗑 Excluir este tamanho</button>':'')+'</div>';
   });
   corpo+='<button class="btn sec wide" data-act="receita" data-v="'+p.id+'">📖 Ver receita e custos</button><button class="btn sec wide" data-act="abrirficha" data-v="'+p.id+'">✏️ Mudar receita ou tamanhos</button>'+
     '<div class="row2" style="margin-top:18px"><button class="btn sec" data-act="arquivar" data-v="'+p.id+'">📦 Arquivar</button><button class="btn danger" data-act="delprod" data-id="'+p.id+'">🗑 Excluir</button></div><p class="ajuda">Arquivar esconde o salgado sem apagar. Dá para voltar a usar depois.</p>';
@@ -377,7 +378,7 @@ function mFicha(){
   corpo+='<button class="btn sec wide" data-act="addcomp" '+pa+'>+ Adicionar outra parte</button></div>';
   corpo+='<div class="bloco"><h3>3. Tamanhos</h3><p class="ajuda">Para cada tamanho, diga quantos gramas de cada parte vão em um salgado. Se mudar o peso total, as partes se ajustam sozinhas.</p>';
   p.tamanhos.forEach(function(t){var ta=pa+' data-tid="'+t.id+'"',c=calc(p,t);
-    corpo+='<div class="parte">'+campo('Nome do tamanho',txt('tam',ta+' data-f="nome"',t.nome,'Ex.: Festa'))+campo('Peso total (gramas)',num('tam',ta+' data-f="peso"',nf(peso(t),1)))+
+    corpo+='<div class="parte">'+campo('Nome do tamanho',txt('tam',ta+' data-f="nome"',t.nome,'Ex.: Festa, Média, Grande'))+campo('Peso total (gramas)',num('tam',ta+' data-f="peso"',nf(peso(t),1)))+
       '<div class="duas">'+p.comps.map(function(cp){return campo(esc(cp.nome)+' (g)',num('tamg',ta+' data-cid="'+cp.id+'"',nf(t.g[cp.id]||0,1)));}).join('')+'</div>'+
       '<div class="parterod"><span>Custo de cada um: <b>'+brl(c.custo)+'</b></span><button class="btn link-danger" data-act="deltam" '+ta+'>Apagar tamanho</button></div></div>';
   });
@@ -554,8 +555,8 @@ root.addEventListener('click',function(e){
   if(a==='delitem'){p.comps[+b.dataset.ci].itens.splice(+b.dataset.i,1);touch();render();return;}
   if(a==='addcomp'){var nc={id:uid('c'),nome:p.comps.length?'Recheio':'Massa',rend:1000,itens:[]};p.comps.push(nc);p.tamanhos.forEach(function(t){t.g[nc.id]=0;});touch();render();return;}
   if(a==='delcomp'){var ci=+b.dataset.ci,cc=p.comps[ci];M={tipo:'confirmar',titulo:'Apagar “'+esc(cc.nome)+'”?',msg:'A parte “'+esc(cc.nome)+'” e os ingredientes dela vão sair da receita de '+esc(p.nome)+'.',botao:'Sim, apagar',volta:{tipo:'ficha',id:p.id},faz:function(){p.comps.splice(ci,1);p.tamanhos.forEach(function(t){delete t.g[cc.id];});}};render();return;}
-  if(a==='addtam'){var w=+v,pr={},s0=null;p.tamanhos.forEach(function(t){if(!s0&&peso(t)>0)s0=t;});var w0=s0?peso(s0):0;p.comps.forEach(function(c){pr[c.id]=w0>0?(+s0.g[c.id]||0)/w0:1/p.comps.length;});var g={};p.comps.forEach(function(c){g[c.id]=Math.round(w*pr[c.id]*10)/10;});p.tamanhos.push({id:uid('t'),nome:'',g:g,preco:null,emb:null});touch();render();return;}
-  if(a==='deltam'){if(p.tamanhos.length<=1){toast('O salgado precisa ter pelo menos um tamanho.');return;}var tid=b.dataset.tid,td=tamById(p,tid);M={tipo:'confirmar',titulo:'Apagar o tamanho '+tNome(td)+'?',msg:'Esse tamanho vai sair de '+esc(p.nome)+'.',botao:'Sim, apagar',volta:{tipo:'ficha',id:p.id},faz:function(){p.tamanhos=p.tamanhos.filter(function(t){return t.id!==tid;});}};render();return;}
+  if(a==='addtam'){var w=+v,pr={},s0=null;p.tamanhos.forEach(function(t){if(!s0&&peso(t)>0)s0=t;});var w0=s0?peso(s0):0;p.comps.forEach(function(c){pr[c.id]=w0>0?(+s0.g[c.id]||0)/w0:1/p.comps.length;});var g={};p.comps.forEach(function(c){g[c.id]=Math.round(w*pr[c.id]*10)/10;});p.tamanhos.push({id:uid('t'),nome:nomeTamanho(w),g:g,preco:null,emb:null});touch();render();return;}
+  if(a==='deltam'){if(p.tamanhos.length<=1){toast('O salgado precisa ter pelo menos um tamanho.');return;}var tid=b.dataset.tid,td=tamById(p,tid);M={tipo:'confirmar',titulo:'Excluir o tamanho '+tNome(td)+'?',msg:'O tamanho <b>'+tNome(td)+'</b> vai sair de '+esc(p.nome)+'.',botao:'Sim, excluir',volta:M,faz:function(){p.tamanhos=p.tamanhos.filter(function(t){return t.id!==tid;});}};render();return;}
   if(a==='addprod'){var np={id:uid('p'),nome:'Novo salgado',cat:'Frito',perda:5,fritura:100,comps:[{id:'massa',nome:'Massa',rend:1000,itens:[]},{id:'rech',nome:'Recheio',rend:1000,itens:[]}],tamanhos:[{id:'t1',nome:'Festa',g:{massa:12,rech:8},preco:null,emb:null}]};S.produtos.push(np);touch();abrir({tipo:'ficha',id:np.id});return;}
   if(a==='dupprod'){var cp=clone(p);cp.id=uid('p');cp.nome+=' (cópia)';cp.tamanhos.forEach(function(t){t.preco=null;});S.produtos.push(cp);touch();abrir({tipo:'ficha',id:cp.id});toast('Cópia criada. Mude o nome e a receita.');return;}
   if(a==='delprod'){M={tipo:'confirmar',titulo:'Apagar '+esc(p.nome)+'?',msg:'O salgado <b>'+esc(p.nome)+'</b> e a receita dele vão ser apagados para sempre. Se só quer tirar da lista, use <b>Arquivar</b>.',cancelar:M,botao:'Sim, excluir',faz:function(){S.produtos=S.produtos.filter(function(x){return x.id!==p.id;});Object.keys(S.pedido).forEach(function(k){if(k.indexOf(p.id+'|')===0)delete S.pedido[k];});}};render();return;}
