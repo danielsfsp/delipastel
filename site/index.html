@@ -141,6 +141,12 @@ nav.bottom button.on{background:var(--acc2);color:var(--acc-d)}
 .pg{color:var(--muted);min-width:52px}
 .pm{white-space:nowrap}
 .linha small .pr{display:inline;font-size:17px;color:var(--acc-d)}
+.lc{flex:1;min-width:0}
+.grade{display:grid;gap:2px 10px;margin-top:6px;align-items:baseline}
+.grade i{font-style:normal}
+.grade .gh{font-size:14px;color:var(--muted);font-weight:700}
+.grade .pg{color:var(--muted);font-size:16px}
+.grade .pr{font-size:18px;color:var(--acc-d)}
 </style>
 </head>
 <body>
@@ -312,7 +318,11 @@ function vPrecos(){
       var ts=p.tamanhos.filter(function(t){return fPeso==='todos'||Math.round(peso(t))===+fPeso;});
       if(!ms.length||!ts.length)return;
       var prej=ts.some(function(t){return ms.some(function(m){return calc(p,t,m).lucro<0;});});
-      linhas+='<button class="linha" data-act="cartao" data-v="'+p.id+'"><span><b>'+esc(p.nome)+(prej?' <span class="alerta">⚠️ prejuízo</span>':'')+'</b>'+ts.map(function(t){return '<small class="pl">'+(ts.length>1||fPeso==='todos'?'<span class="pg">'+nf(peso(t),0)+' g</span>':'')+ms.map(function(m){return '<span class="pm">'+(ms.length>1?(m==='cong'?'❄️ congelado ':'🔥 frito '):'')+'<b class="pr">'+brl(calc(p,t,m).preco)+'</b></span>';}).join('')+'</small>';}).join('')+'</span><span class="seta">›</span></button>';
+      var cols=(ms.length>1)||(fPeso==='todos'||ts.length>1);
+      var grade='<span class="grade" style="grid-template-columns:'+(fPeso==='todos'||ts.length>1?'56px ':'')+ms.map(function(){return '1fr';}).join(' ')+'">'+
+        (ms.length>1?(fPeso==='todos'||ts.length>1?'<i></i>':'')+ms.map(function(m){return '<i class="gh">'+modoNome(m)+'</i>';}).join(''):'')+
+        ts.map(function(t){return (fPeso==='todos'||ts.length>1?'<i class="pg">'+nf(peso(t),0)+' g</i>':'')+ms.map(function(m){return '<b class="pr">'+brl(calc(p,t,m).preco)+'</b>';}).join('');}).join('')+'</span>';
+      linhas+='<button class="linha" data-act="cartao" data-v="'+p.id+'"><span class="lc"><b class="ln">'+esc(p.nome)+(prej?' <span class="alerta">⚠️ prejuízo</span>':'')+'</b>'+grade+'</span><span class="seta">›</span></button>';
     });
     if(linhas){algum=true;h+='<h2 class="grupo">'+catLabel(g[0])+'</h2><div class="card lista-botoes">'+linhas+'</div>';}
   });
