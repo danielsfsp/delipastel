@@ -86,6 +86,10 @@ tr.sub td{border-bottom-color:#f8f3ea}
 .chip{padding:4px 10px;font-size:13px;border-radius:99px}
 .cnt{font-size:12px;color:var(--muted);font-weight:400}
 td>input:not(.num){min-width:140px}
+html,body{max-width:100%;overflow-x:hidden}
+main>*,.split>*,.card{min-width:0}
+.mhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;top:-16px;background:#fff;z-index:2;margin:-16px -16px 12px;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+@media(max-width:700px){.modal{padding:0}.modal .card.big{max-height:100vh;height:100vh;border-radius:0;border:0}.mhead h2{font-size:20px}main{padding:14px}header .top{gap:8px}}
 td>select{min-width:170px}
 .login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
 .login .card{max-width:380px;width:100%;text-align:center}
@@ -100,7 +104,7 @@ var SB_URL='https://ggsluymzpecvuxuydrev.supabase.co',SB_KEY='sb_publishable_a4Q
 var K_COD='delipastel-codigo',K_CACHE='delipastel-cache',K_DRAFT='delipastel-rascunho';
 var local={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}},del:function(k){try{localStorage.removeItem(k);}catch(e){}}};
 function clone(o){return JSON.parse(JSON.stringify(o));}
-var S=null,rev=null,atualizadoEm=null,dirty=false,saving=false,offline=false,modal=null,recipe=null,recipeSim={t:null,q:100},loginMsg='',carregando=false;
+var editProd=null,S=null,rev=null,atualizadoEm=null,dirty=false,saving=false,offline=false,modal=null,recipe=null,recipeSim={t:null,q:100},loginMsg='',carregando=false;
 function rpc(nome,body){return fetch(SB_URL+'/rest/v1/rpc/'+nome,{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json().catch(function(){return null;}).then(function(j){if(!r.ok){var t=JSON.stringify(j||'');throw new Error(/codigo_invalido/.test(t)?'codigo':/conflito/.test(t)?'conflito':'rede');}return j;});});}
 function aplicar(j){S=j.conteudo;rev=j.rev;atualizadoEm=j.atualizado_em;if(!S.pedido)S.pedido={};if(!selProd||!prodById(selProd))selProd=S.produtos[0]&&S.produtos[0].id;}
 (function(){var c=local.get(K_CACHE);if(c){try{aplicar(JSON.parse(c));}catch(e){}}var d=local.get(K_DRAFT);if(S&&d){try{d=JSON.parse(d);if(d.rev===rev&&d.data){S=d.data;dirty=true;}}catch(e){}}})();
@@ -228,7 +232,7 @@ function vPrecos(){
 function vReceita(){
   var p=prodById(recipe);if(!p)return '';
   if(!recipeSim.t||!tamById(p,recipeSim.t))recipeSim.t=p.tamanhos[0]&&p.tamanhos[0].id;
-  var h='<div class="modal" data-act="closerec"><div class="card big" data-stop><div class="row"><div><div class="tag">'+esc(p.cat)+'</div><h2 style="margin-top:4px">'+esc(p.nome)+'</h2></div><span class="spacer"></span><button class="btn" data-act="editar" data-v="'+p.id+'">Editar receita</button><button class="btn x" data-act="closerec" style="font-size:22px">×</button></div>';
+  var h='<div class="modal" data-act="closerec"><div class="card big" data-stop><div class="mhead"><div><div class="tag">Receita e custos · '+esc(p.cat)+'</div><h2 style="margin-top:4px">'+esc(p.nome)+'</h2></div><span class="spacer"></span><button class="btn" data-act="editar" data-v="'+p.id+'">Editar receita</button><button class="btn x" data-act="closerec" style="font-size:24px">×</button></div>';
   h+='<p class="hint">Perda: '+nf(p.perda)+'%'+(+p.fritura>0?' · Óleo de fritura: '+nf(p.fritura)+' ml por kg de salgado':'')+'</p>';
   p.comps.forEach(function(c){var tot=compCusto(c);
     h+='<div class="comp"><div class="row"><h3 style="margin:0">'+esc(c.nome)+'</h3><span class="spacer"></span><span class="hint" style="margin:0">Rende '+qtyLabel(c.rend,'g')+' · <b>'+brl(compPorG(c)*1000)+' / kg</b></span></div><div class="tw"><table><thead><tr><th>Ingrediente</th><th class="n">Quantidade</th><th class="n">Preço de compra</th><th class="n">Custo</th><th class="n">% da '+esc(c.nome.toLowerCase())+'</th></tr></thead><tbody>';
@@ -253,13 +257,15 @@ function vReceita(){
 
 /* ---------- aba: fichas ---------- */
 function vFichas(){
-  var p=prodById(selProd)||S.produtos[0];if(p)selProd=p.id;
-  var h='<h2>Fichas técnicas</h2><p class="hint">Monte a receita em partes (massa, recheio, empanamento). Em cada parte, informe quanto ela rende pronta, em gramas — pese a massa ou o recheio depois de pronto. Depois defina os tamanhos: quantos gramas de cada parte vão em cada salgado.</p><div class="split"><div class="card plist">';
-  grupos().forEach(function(g){h+='<div class="g">'+esc(catLabel(g[0]))+'</div>';g[1].forEach(function(x){h+='<button data-act="sel" data-v="'+x.id+'" class="'+(p&&x.id===p.id?'on':'')+'"><span>'+esc(x.nome)+'</span><span class="cnt">'+x.tamanhos.length+' tam.</span></button>';});});
-  h+='<div style="margin:10px"><button class="btn" data-act="addprod">+ Novo salgado</button></div></div><div>';
-  if(!p)return h+'</div></div>';
+  var h='<h2>Fichas técnicas</h2><p class="hint">Toque em um salgado para abrir a ficha técnica: a receita em partes (massa, recheio, empanamento) e os tamanhos.</p><div class="card plist">';
+  grupos().forEach(function(g){h+='<div class="g">'+esc(catLabel(g[0]))+'</div>';g[1].forEach(function(x){var c=x.tamanhos[0]?calc(x,x.tamanhos[0]):null;h+='<button data-act="abrirficha" data-v="'+x.id+'"><span>'+esc(x.nome)+'</span><span class="cnt">'+x.tamanhos.map(function(t){return nf(peso(t),0)+' g';}).join(' · ')+' ›</span></button>';});});
+  return h+'<div style="margin:10px"><button class="btn" data-act="addprod">+ Novo salgado</button></div></div>';
+}
+function vFicha(){
+  var p=prodById(editProd);if(!p)return '';
+  var h='<div class="modal" data-act="closeficha"><div class="card big" data-stop><div class="mhead"><div><div class="tag">Ficha técnica · '+esc(p.cat)+'</div><h2 style="margin-top:4px">'+esc(p.nome)+'</h2></div><span class="spacer"></span><button class="btn" data-act="receita" data-v="'+p.id+'">Ver custos</button><button class="btn x" data-act="closeficha" style="font-size:24px">×</button></div>';
   var pa='data-id="'+p.id+'"';
-  h+='<div class="card"><div class="grid"><label class="f">Nome'+txt('prod',pa+' data-f="nome"',p.nome)+'</label><label class="f">Categoria<select data-t="prod" '+pa+' data-f="cat">'+['Frito','Assado','Outro'].map(function(o){return '<option'+(o===p.cat?' selected':'')+'>'+o+'</option>';}).join('')+'</select></label><label class="f">Perda (%)'+inp('prod',pa+' data-f="perda"',nf(p.perda))+'</label><label class="f">Óleo de fritura (ml por kg)'+inp('prod',pa+' data-f="fritura"',nf(p.fritura))+'</label></div><div class="row"><button class="btn" data-act="receita" data-v="'+p.id+'">Ver receita e custos</button><span class="spacer"></span><button class="btn" data-act="dupprod" '+pa+'>Duplicar</button><button class="btn" data-act="delprod" '+pa+' style="color:var(--bad)">Excluir salgado</button></div></div>';
+  h+='<div class="card"><div class="grid"><label class="f">Nome'+txt('prod',pa+' data-f="nome"',p.nome)+'</label><label class="f">Categoria<select data-t="prod" '+pa+' data-f="cat">'+['Frito','Assado','Outro'].map(function(o){return '<option'+(o===p.cat?' selected':'')+'>'+o+'</option>';}).join('')+'</select></label><label class="f">Perda (%)'+inp('prod',pa+' data-f="perda"',nf(p.perda))+'</label><label class="f">Óleo de fritura (ml por kg)'+inp('prod',pa+' data-f="fritura"',nf(p.fritura))+'</label></div><div class="row"><span class="spacer"></span><button class="btn" data-act="dupprod" '+pa+'>Duplicar</button><button class="btn" data-act="delprod" '+pa+' style="color:var(--bad)">Excluir salgado</button></div></div>';
   // componentes
   p.comps.forEach(function(c,ci){var tot=compCusto(c),ca=pa+' data-ci="'+ci+'"';
     h+='<div class="card"><div class="grid" style="grid-template-columns:2fr 1fr 1fr auto;align-items:end"><label class="f">Parte da receita'+txt('comp',ca+' data-f="nome"',c.nome)+'</label><label class="f">Rendimento pronto (g)'+inp('comp',ca+' data-f="rend"',nf(c.rend,1))+'</label><div><div class="hint" style="margin:0">Custo</div><b>'+brl(tot)+'</b> · '+brl(compPorG(c)*1000)+'/kg</div><button class="btn x" data-act="delcomp" '+ca+' title="Excluir parte">×</button></div>';
@@ -276,7 +282,6 @@ function vFichas(){
   h+='</tbody></table></div><div class="row" style="margin-top:8px">'+[20,30,50,80,100,120].map(function(w){return '<button class="btn chip" data-act="addtam" '+pa+' data-v="'+w+'">+ '+w+' g</button>';}).join('')+'<button class="btn chip" data-act="addtam" '+pa+' data-v="">+ outro</button></div></div>';
   return h+'</div></div>';
 }
-
 /* ---------- aba: insumos ---------- */
 function vInsumos(){
   var uso={};S.produtos.forEach(function(p){var seen={};p.comps.forEach(function(c){c.itens.forEach(function(it){if(!seen[it.ins]){seen[it.ins]=1;uso[it.ins]=(uso[it.ins]||0)+1;}});});});
@@ -322,10 +327,10 @@ function render(){
   if(!S){root.innerHTML=vLogin();var f=document.getElementById('flogin');if(f)f.addEventListener('submit',function(e){e.preventDefault();entrar(document.getElementById('cod').value);});return;}
   var y=window.scrollY,my=0,mb=document.querySelector('.modal .card');if(mb)my=mb.scrollTop;
   var v={precos:vPrecos,fichas:vFichas,insumos:vInsumos,custos:vCustos,pedido:vPedido}[tab]();
-  root.innerHTML=header()+'<main>'+v+'</main>'+(recipe?vReceita():'')+(modal||'');
+  root.innerHTML=header()+'<main>'+v+'</main>'+(editProd?vFicha():'')+(recipe?vReceita():'')+(modal||'');
   try{window.scrollTo(0,y);}catch(e){}
   mb=document.querySelector('.modal .card');if(mb&&my)mb.scrollTop=my;
-  document.body.style.overflow=(recipe||modal)?'hidden':'';
+  document.body.style.overflow=(recipe||modal||editProd)?'hidden':'';
 }
 
 /* ---------- eventos ---------- */
@@ -347,16 +352,18 @@ root.addEventListener('change',function(e){
   else if(t==='pedido')S.pedido[ds.k]=v;
   touch();render();
 });
-root.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.dataset.t)e.target.blur();if(e.key==='Escape'&&(recipe||modal)){recipe=null;modal=null;render();}});
+root.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.dataset.t)e.target.blur();if(e.key==='Escape'&&(recipe||modal||editProd)){if(modal)modal=null;else if(recipe)recipe=null;else editProd=null;render();}});
 function propDe(p){var s=null;p.tamanhos.forEach(function(t){if(!s&&peso(t)>0)s=t;});var r={};var w=s?peso(s):0;p.comps.forEach(function(c){r[c.id]=w>0?(+s.g[c.id]||0)/w:1/p.comps.length;});return r;}
 root.addEventListener('click',function(e){
   var b=e.target.closest('[data-act]');if(!b)return;
   var a=b.dataset.act,v=b.dataset.v,id=b.dataset.id,p=id?prodById(id):null;
-  if((a==='closerec'||a==='closemodal')&&b.classList.contains('modal')&&e.target.closest('[data-stop]'))return;
+  if((a==='closerec'||a==='closemodal'||a==='closeficha')&&b.classList.contains('modal')&&e.target.closest('[data-stop]'))return;
   if(a==='tab'){tab=v;try{history.replaceState(null,'','#'+v);}catch(er){}render();try{window.scrollTo(0,0);}catch(er){}return;}
-  if(a==='receita'){recipe=v;recipeSim={t:null,q:100};render();var mc=document.querySelector('.modal .card');if(mc)mc.scrollTop=0;return;}
+  if(a==='abrirficha'){editProd=v;render();var mf=document.querySelector('.modal .card');if(mf)mf.scrollTop=0;return;}
+  if(a==='closeficha'){editProd=null;render();return;}
+  if(a==='receita'){editProd=null;recipe=v;recipeSim={t:null,q:100};render();var mc=document.querySelector('.modal .card');if(mc)mc.scrollTop=0;return;}
   if(a==='closerec'){recipe=null;render();return;}
-  if(a==='editar'){recipe=null;selProd=v;tab='fichas';try{history.replaceState(null,'','#fichas');}catch(er){}render();try{window.scrollTo(0,0);}catch(er){}return;}
+  if(a==='editar'){recipe=null;editProd=v;render();var me=document.querySelector('.modal .card');if(me)me.scrollTop=0;return;}
   if(a==='sel'){selProd=v;render();return;}
   if(a==='save'){save();return;}
   if(a==='sair'){if(dirty&&b.dataset.confirm!=='1'){b.dataset.confirm='1';b.textContent='Há alterações não salvas. Sair mesmo?';return;}sair();return;}
@@ -376,9 +383,9 @@ root.addEventListener('click',function(e){
   if(a==='delcomp'){if(b.dataset.confirm!=='1'){b.dataset.confirm='1';b.textContent='Excluir?';b.style.fontSize='13px';return;}var cc=p.comps.splice(+b.dataset.ci,1)[0];p.tamanhos.forEach(function(t){delete t.g[cc.id];});touch();render();return;}
   if(a==='addtam'){var w=v===''?50:+v,pr=propDe(p),g={};p.comps.forEach(function(c){g[c.id]=Math.round(w*pr[c.id]*10)/10;});p.tamanhos.push({id:uid('t'),nome:'',g:g,preco:null,emb:null});touch();render();return;}
   if(a==='deltam'){if(p.tamanhos.length<=1){toast('O salgado precisa de pelo menos um tamanho.');return;}p.tamanhos=p.tamanhos.filter(function(t){return t.id!==b.dataset.tid;});touch();render();return;}
-  if(a==='addprod'){var np={id:uid('p'),nome:'Novo salgado',cat:'Frito',perda:5,fritura:100,comps:[{id:'massa',nome:'Massa',rend:1000,itens:[]},{id:'rech',nome:'Recheio',rend:1000,itens:[]}],tamanhos:[{id:'t1',nome:'Festa',g:{massa:12,rech:8},preco:null,emb:null}]};S.produtos.push(np);selProd=np.id;touch();render();return;}
-  if(a==='dupprod'){var cp=clone(p);cp.id=uid('p');cp.nome+=' (cópia)';cp.tamanhos.forEach(function(t){t.preco=null;});S.produtos.push(cp);selProd=cp.id;touch();render();return;}
-  if(a==='delprod'){if(b.dataset.confirm!=='1'){b.dataset.confirm='1';b.textContent='Clique de novo para excluir';return;}S.produtos=S.produtos.filter(function(x){return x.id!==id;});Object.keys(S.pedido).forEach(function(k){if(k.indexOf(id+'|')===0)delete S.pedido[k];});selProd=S.produtos[0]&&S.produtos[0].id;touch();render();return;}
+  if(a==='addprod'){var np={id:uid('p'),nome:'Novo salgado',cat:'Frito',perda:5,fritura:100,comps:[{id:'massa',nome:'Massa',rend:1000,itens:[]},{id:'rech',nome:'Recheio',rend:1000,itens:[]}],tamanhos:[{id:'t1',nome:'Festa',g:{massa:12,rech:8},preco:null,emb:null}]};S.produtos.push(np);selProd=np.id;editProd=np.id;touch();render();return;}
+  if(a==='dupprod'){var cp=clone(p);cp.id=uid('p');cp.nome+=' (cópia)';cp.tamanhos.forEach(function(t){t.preco=null;});S.produtos.push(cp);selProd=cp.id;editProd=cp.id;touch();render();return;}
+  if(a==='delprod'){if(b.dataset.confirm!=='1'){b.dataset.confirm='1';b.textContent='Clique de novo para excluir';return;}S.produtos=S.produtos.filter(function(x){return x.id!==id;});Object.keys(S.pedido).forEach(function(k){if(k.indexOf(id+'|')===0)delete S.pedido[k];});selProd=S.produtos[0]&&S.produtos[0].id;editProd=null;touch();render();return;}
   if(a==='addins'){S.insumos.push({id:uid('i'),nome:'Novo insumo',unid:'kg',qtd:1,preco:0});touch();render();return;}
   if(a==='delins'){var users=S.produtos.filter(function(x){return x.comps.some(function(c){return c.itens.some(function(it){return it.ins===id;});});}).map(function(x){return x.nome;});if(id==='oleo'){toast('O óleo de soja é usado no cálculo da fritura; edite o preço em vez de excluir.');return;}if(users.length){toast('Usado em: '+users.join(', ')+'. Remova das receitas antes.');return;}S.insumos=S.insumos.filter(function(x){return x.id!==id;});touch();render();return;}
   if(a==='addfixo'){S.fixos.push({nome:'Nova despesa',valor:0});touch();render();return;}
