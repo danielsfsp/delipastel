@@ -104,7 +104,7 @@ var SB_URL='https://ggsluymzpecvuxuydrev.supabase.co',SB_KEY='sb_publishable_a4Q
 var K_COD='delipastel-codigo',K_CACHE='delipastel-cache',K_DRAFT='delipastel-rascunho';
 var local={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}},del:function(k){try{localStorage.removeItem(k);}catch(e){}}};
 function clone(o){return JSON.parse(JSON.stringify(o));}
-var editProd=null,S=null,rev=null,atualizadoEm=null,dirty=false,saving=false,offline=false,modal=null,recipe=null,recipeSim={t:null,q:100},loginMsg='',carregando=false;
+var usosIns=null,editProd=null,S=null,rev=null,atualizadoEm=null,dirty=false,saving=false,offline=false,modal=null,recipe=null,recipeSim={t:null,q:100},loginMsg='',carregando=false;
 function rpc(nome,body){return fetch(SB_URL+'/rest/v1/rpc/'+nome,{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json().catch(function(){return null;}).then(function(j){if(!r.ok){var t=JSON.stringify(j||'');throw new Error(/codigo_invalido/.test(t)?'codigo':/conflito/.test(t)?'conflito':'rede');}return j;});});}
 function aplicar(j){S=j.conteudo;rev=j.rev;atualizadoEm=j.atualizado_em;if(!S.pedido)S.pedido={};if(!selProd||!prodById(selProd))selProd=S.produtos[0]&&S.produtos[0].id;}
 (function(){var c=local.get(K_CACHE);if(c){try{aplicar(JSON.parse(c));}catch(e){}}var d=local.get(K_DRAFT);if(S&&d){try{d=JSON.parse(d);if(d.rev===rev&&d.data){S=d.data;dirty=true;}}catch(e){}}})();
@@ -282,12 +282,33 @@ function vFicha(){
   h+='</tbody></table></div><div class="row" style="margin-top:8px">'+[20,30,50,80,100,120].map(function(w){return '<button class="btn chip" data-act="addtam" '+pa+' data-v="'+w+'">+ '+w+' g</button>';}).join('')+'<button class="btn chip" data-act="addtam" '+pa+' data-v="">+ outro</button></div></div>';
   return h+'</div></div>';
 }
+/* ---------- onde o insumo é usado (janela) ---------- */
+function vUsos(){
+  var x=insById(usosIns);if(!x)return '';var b=base(x.unid),cb=custoBase(x);
+  var h='<div class="modal" data-act="closeusos"><div class="card big" data-stop><div class="mhead"><div><div class="tag">Onde é usado</div><h2 style="margin-top:4px">'+esc(x.nome)+'</h2><div class="hint" style="margin:2px 0 0">'+brl(x.preco)+' / '+nf(x.qtd,3)+' '+x.unid+' · '+brl(cb,4)+' por '+b+'</div></div><span class="spacer"></span><button class="btn x" data-act="closeusos" style="font-size:24px">×</button></div>';
+  var n=0;
+  grupos().forEach(function(g){g[1].forEach(function(p){
+    var partes=[];p.comps.forEach(function(c){c.itens.forEach(function(it){if(it.ins===x.id)partes.push([c,it]);});});
+    var frit=x.id==='oleo'&&(+p.fritura>0);
+    if(!partes.length&&!frit)return;n++;
+    var perda=1-Math.min(+p.perda||0,95)/100;
+    h+='<div class="comp"><div class="row"><button class="link" data-act="abrirficha" data-v="'+p.id+'" style="font-size:16px">'+esc(p.nome)+'</button><span class="tag">'+esc(p.cat)+'</span></div>';
+    h+='<p class="hint" style="margin:6px 0">'+partes.map(function(pc){return '<b>'+esc(pc[0].nome)+'</b>: '+qtyLabel(pc[1].qtd||0,b)+' na receita (rende '+qtyLabel(pc[0].rend,'g')+') = '+brl((pc[1].qtd||0)*cb);}).join('<br>')+(frit?(partes.length?'<br>':'')+'<b>Fritura</b>: '+nf(p.fritura)+' ml por kg de salgado':'')+'</p>';
+    h+='<div class="tw"><table><thead><tr><th>Tamanho</th><th class="n">Quantidade por salgado</th><th class="n">Custo por salgado</th><th class="n">Por cento</th></tr></thead><tbody>';
+    p.tamanhos.forEach(function(t){var q=0;partes.forEach(function(pc){var c=pc[0];if(c.rend>0)q+=(+t.g[c.id]||0)/perda/c.rend*(pc[1].qtd||0);});if(frit)q+=peso(t)/1000*(+p.fritura)/perda;
+      h+='<tr><td>'+tLabel(t)+'</td><td class="n">'+qtyLabel(q,b)+'</td><td class="n">'+brl(q*cb,4)+'</td><td class="n">'+qtyLabel(q*100,b)+' · '+brl(q*cb*100)+'</td></tr>';});
+    h+='</tbody></table></div></div>';
+  });});
+  if(!n)h+='<p class="hint">Este insumo ainda não está em nenhuma receita.</p>';
+  return h+'</div></div>';
+}
+
 /* ---------- aba: insumos ---------- */
 function vInsumos(){
   var uso={};S.produtos.forEach(function(p){var seen={};p.comps.forEach(function(c){c.itens.forEach(function(it){if(!seen[it.ins]){seen[it.ins]=1;uso[it.ins]=(uso[it.ins]||0)+1;}});});});
   var h='<h2>Insumos</h2><p class="hint">Cadastre o que você compra: tamanho da embalagem e quanto pagou. O app calcula o custo por grama, ml ou unidade e atualiza todas as receitas. O insumo “Óleo de soja” é usado também para calcular o óleo de fritura. Os preços iniciais são exemplos.</p><div class="card tw"><table><thead><tr><th>Insumo</th><th class="n">Embalagem</th><th>Unidade</th><th class="n">Preço pago</th><th class="n">Custo por g / ml / un.</th><th class="n">Usado em</th><th></th></tr></thead><tbody>';
   S.insumos.forEach(function(x){
-    h+='<tr><td>'+txt('ins','data-id="'+x.id+'" data-f="nome"',x.nome)+'</td><td class="n">'+inp('ins','data-id="'+x.id+'" data-f="qtd"',nf(x.qtd,3),'w-s')+'</td><td><select data-t="ins" data-id="'+x.id+'" data-f="unid" style="width:auto">'+['kg','g','L','ml','un'].map(function(u){return '<option'+(u===x.unid?' selected':'')+'>'+u+'</option>';}).join('')+'</select></td><td class="n">'+inp('ins','data-id="'+x.id+'" data-f="preco"',nf(x.preco,2),'w-s')+'</td><td class="n">'+brl(custoBase(x),4)+' / '+base(x.unid)+'</td><td class="n">'+(uso[x.id]||0)+' salgado'+((uso[x.id]||0)===1?'':'s')+'</td><td><button class="btn x" data-act="delins" data-id="'+x.id+'">×</button></td></tr>';});
+    h+='<tr><td>'+txt('ins','data-id="'+x.id+'" data-f="nome"',x.nome)+'</td><td class="n">'+inp('ins','data-id="'+x.id+'" data-f="qtd"',nf(x.qtd,3),'w-s')+'</td><td><select data-t="ins" data-id="'+x.id+'" data-f="unid" style="width:auto">'+['kg','g','L','ml','un'].map(function(u){return '<option'+(u===x.unid?' selected':'')+'>'+u+'</option>';}).join('')+'</select></td><td class="n">'+inp('ins','data-id="'+x.id+'" data-f="preco"',nf(x.preco,2),'w-s')+'</td><td class="n">'+brl(custoBase(x),4)+' / '+base(x.unid)+'</td><td class="n">'+((uso[x.id]||0)||(x.id==='oleo')?'<button class="link" data-act="usos" data-id="'+x.id+'">'+(uso[x.id]||0)+' salgado'+((uso[x.id]||0)===1?'':'s')+(x.id==='oleo'?' + fritura':'')+'</button>':'<span class="hint">nenhum</span>')+'</td><td><button class="btn x" data-act="delins" data-id="'+x.id+'">×</button></td></tr>';});
   return h+'</tbody></table><div style="margin-top:10px"><button class="btn" data-act="addins">+ Novo insumo</button></div></div>';
 }
 
@@ -327,10 +348,10 @@ function render(){
   if(!S){root.innerHTML=vLogin();var f=document.getElementById('flogin');if(f)f.addEventListener('submit',function(e){e.preventDefault();entrar(document.getElementById('cod').value);});return;}
   var y=window.scrollY,my=0,mb=document.querySelector('.modal .card');if(mb)my=mb.scrollTop;
   var v={precos:vPrecos,fichas:vFichas,insumos:vInsumos,custos:vCustos,pedido:vPedido}[tab]();
-  root.innerHTML=header()+'<main>'+v+'</main>'+(editProd?vFicha():'')+(recipe?vReceita():'')+(modal||'');
+  root.innerHTML=header()+'<main>'+v+'</main>'+(usosIns?vUsos():'')+(editProd?vFicha():'')+(recipe?vReceita():'')+(modal||'');
   try{window.scrollTo(0,y);}catch(e){}
   mb=document.querySelector('.modal .card');if(mb&&my)mb.scrollTop=my;
-  document.body.style.overflow=(recipe||modal||editProd)?'hidden':'';
+  document.body.style.overflow=(recipe||modal||editProd||usosIns)?'hidden':'';
 }
 
 /* ---------- eventos ---------- */
@@ -352,14 +373,16 @@ root.addEventListener('change',function(e){
   else if(t==='pedido')S.pedido[ds.k]=v;
   touch();render();
 });
-root.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.dataset.t)e.target.blur();if(e.key==='Escape'&&(recipe||modal||editProd)){if(modal)modal=null;else if(recipe)recipe=null;else editProd=null;render();}});
+root.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.tagName==='INPUT'&&e.target.dataset.t)e.target.blur();if(e.key==='Escape'&&(recipe||modal||editProd||usosIns)){if(modal)modal=null;else if(recipe)recipe=null;else if(editProd)editProd=null;else usosIns=null;render();}});
 function propDe(p){var s=null;p.tamanhos.forEach(function(t){if(!s&&peso(t)>0)s=t;});var r={};var w=s?peso(s):0;p.comps.forEach(function(c){r[c.id]=w>0?(+s.g[c.id]||0)/w:1/p.comps.length;});return r;}
 root.addEventListener('click',function(e){
   var b=e.target.closest('[data-act]');if(!b)return;
   var a=b.dataset.act,v=b.dataset.v,id=b.dataset.id,p=id?prodById(id):null;
-  if((a==='closerec'||a==='closemodal'||a==='closeficha')&&b.classList.contains('modal')&&e.target.closest('[data-stop]'))return;
+  if((a==='closerec'||a==='closemodal'||a==='closeficha'||a==='closeusos')&&b.classList.contains('modal')&&e.target.closest('[data-stop]'))return;
   if(a==='tab'){tab=v;try{history.replaceState(null,'','#'+v);}catch(er){}render();try{window.scrollTo(0,0);}catch(er){}return;}
-  if(a==='abrirficha'){editProd=v;render();var mf=document.querySelector('.modal .card');if(mf)mf.scrollTop=0;return;}
+  if(a==='usos'){usosIns=id;render();var mu=document.querySelector('.modal .card');if(mu)mu.scrollTop=0;return;}
+  if(a==='closeusos'){usosIns=null;render();return;}
+  if(a==='abrirficha'){usosIns=null;editProd=v;render();var mf=document.querySelector('.modal .card');if(mf)mf.scrollTop=0;return;}
   if(a==='closeficha'){editProd=null;render();return;}
   if(a==='receita'){editProd=null;recipe=v;recipeSim={t:null,q:100};render();var mc=document.querySelector('.modal .card');if(mc)mc.scrollTop=0;return;}
   if(a==='closerec'){recipe=null;render();return;}
